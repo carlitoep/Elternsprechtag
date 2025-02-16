@@ -1,0 +1,84 @@
+/* Allgemeine Stile für alle Seiten */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9; /* Heller Hintergrund */
+    color: #333;
+    margin: 0;
+    padding: 20px; /* Mehr Platz am Rand */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh; /* Statt height: 100vh */
+}
+
+/* Überschriften */
+h1, h2 {
+    color: #2c3e50;
+}
+
+/* Container für Inhalte */
+.container {
+    width: 90%;
+    max-width: 600px;
+    background: white; /* Hintergrund für Sichtbarkeit */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Leichter Schatten für 3D-Effekt */
+    text-align: center;
+}
+
+/* Labels */
+label {
+    font-weight: bold;
+    display: block;
+    margin: 10px 0 5px;
+}
+
+/* Eingabefelder */
+input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Buttons */
+button {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+
+
+/* Einzelne Terminoptionen */
+.termin-box {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: red;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.termin-box2 {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Text in Terminoptionen */
+p {
+    font-size: 18px;
+    font-weight: bold;
+}

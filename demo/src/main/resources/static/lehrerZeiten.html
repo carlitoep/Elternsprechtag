@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uhrzeit wählen</title>
+    <link rel="stylesheet" href="style.css" />
+    <script>
+      let lehrerName = localStorage.getItem("lehrerName");
+
+      window.onload = function () {
+        document.getElementById("info").innerText =
+          "Termine von " + localStorage.getItem("lehrerName");
+        let formData = new URLSearchParams();
+        formData.append("lehrername", lehrerName);
+
+        fetch("http://localhost:8080/api/lehrer", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            let array = JSON.parse(data);
+            for (let element of array) {
+              let p = document.createElement("p");
+              let div = document.createElement("div");
+              div.classList.add("termin-box2");
+              p.innerText = element;
+              let container = document.getElementById("container");
+              container.appendChild(div);
+              div.appendChild(p);
+            }
+          })
+          .catch((error) => console.error("Fehler:", error));
+      };
+    </script>
+  </head>
+  <body>
+    <div id="container" class="container">
+      <p id="info"></p>
+    </div>
+  </body>
+</html>

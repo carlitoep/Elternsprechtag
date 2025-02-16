@@ -1,0 +1,31 @@
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terminbuchung</title>
+    <link rel="stylesheet" href="style.css" />
+    <script>
+      function lehrerZeiten() {
+        let lehrerName = document.getElementById("lehrername").value;
+
+        localStorage.setItem("lehrerName", lehrerName);
+
+        window.location.href = "lehrerZeiten.html"; // Weiter zur zweiten Seite
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Elternsprechtag</h1>
+
+      <label for="lehrername">Lehrername:</label>
+      <input
+        type="text"
+        id="lehrername"
+        name="lehrername"
+        required
+      /><br /><br />
+      <button onclick="lehrerZeiten()">Deine Termine anzeigen</button>
+    </div>
+  </body>
+</html>

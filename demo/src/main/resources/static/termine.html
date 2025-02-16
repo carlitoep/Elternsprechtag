@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Uhrzeit wählen</title>
+    <link rel="stylesheet" href="style.css" />
     <script>
       let name = localStorage.getItem("name");
       let lehrer = localStorage.getItem("lehrer");
@@ -53,10 +54,12 @@
             let zeitenArray = JSON.parse(data);
             for (let element of zeitenArray) {
               let p = document.createElement("p");
-              let div = document.getElementById("freieZeiten");
+              let div = document.createElement("div");
+              div.classList.add("termin-box");
               p.id = `p${zeitenArray.indexOf(element)}`;
               p.textContent = element;
-              //document.getElementById("freieZeiten").innerText = element;
+              let container = document.getElementById("container");
+              container.appendChild(div);
               div.appendChild(p);
               let teile = element.split(":");
               if (teile[2] == "frei") {
@@ -66,7 +69,7 @@
                   bucheTermin(teile[0], teile[1]);
                 };
                 div.appendChild(button);
-                console.log(teile);
+                div.style.backgroundColor = "green";
               }
             }
           })
@@ -75,8 +78,9 @@
     </script>
   </head>
   <body>
-    <h2>Wähle eine Uhrzeit</h2>
-    <p id="info"></p>
-    <div id="freieZeiten"></div>
+    <div id="container" class="container">
+      <h2>Wähle eine Uhrzeit</h2>
+      <p id="info"></p>
+    </div>
   </body>
 </html>

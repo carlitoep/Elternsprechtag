@@ -82,5 +82,16 @@ public class Elternsprechtag {
         } else {
             return "Dieser Termin ist bereits vergeben.";
         }
+
+    }
+
+    @PostMapping("/lehrer")
+    public List<String> lehrerTermine(@RequestParam String lehrername) {
+        List<String> lehrerTermine = new ArrayList<>();
+        for (int i = 0; i < lehrerzeiten.get(lehrername).size(); i++) {
+            lehrerTermine.add((((i * ABSCHNITTE) + START * 60) / 60) + ":"
+                    + (df.format(((i * ABSCHNITTE) + START * 60) % 60)) + ":" + lehrerzeiten.get(lehrername).get(i));
+        }
+        return lehrerTermine;
     }
 }
