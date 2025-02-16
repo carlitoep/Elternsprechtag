@@ -1,0 +1,33 @@
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terminbuchung</title>
+    <script>
+      function zeiten() {
+        let name = document.getElementById("name").value;
+        let lehrer = document.getElementById("lehrername").value;
+
+        if (name === "" || lehrer === "") {
+          alert("Bitte alle Felder ausfüllen!");
+          return;
+        }
+
+        localStorage.setItem("name", name);
+        localStorage.setItem("lehrer", lehrer);
+
+        window.location.href = "termine.html"; // Weiter zur zweiten Seite
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Termin buchen</h1>
+
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required /><br /><br />
+
+    <label for="lehrername">Lehrername:</label>
+    <input type="text" id="lehrername" name="lehrername" required /><br /><br />
+    <button onclick="zeiten()">Freie Zeiten anzeigen</button>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+plugins {
+    id 'application' // Ermöglicht 'gradle run'
+    id 'org.springframework.boot' version '3.2.0' // Die neueste Version von Spring Boot
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'java' // Java Plugin für die Verwendung von Gradle
+}
+
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '21'
+
+repositories {
+    mavenCentral() // Holt Abhängigkeiten aus dem Maven-Repository
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1' // JUnit 5 für Tests
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+application {
+    mainClass = 'com.example.demo.Elternsprechtag' 
+    
+}
+
+tasks.named('test') {
+    useJUnitPlatform() // Stellt sicher, dass JUnit 5 für Tests verwendet wird
+}
+java {
+        sourceCompatibility = JavaVersion.VERSION_21 // Legt die Java-Version auf 21 fest
+    targetCompatibility = JavaVersion.VERSION_21 // Stellt sicher, dass die Kompilierung mit Java 21 erfolgt
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
