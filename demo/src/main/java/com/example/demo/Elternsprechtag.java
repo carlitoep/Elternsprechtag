@@ -1,5 +1,14 @@
 package com.example.demo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,22 +31,77 @@ public class Elternsprechtag {
     static final int START = 17;
     static final String[] lehrer = { "Michel", "Staudinger", "Paulmann", "Merk", "Rappolt" };
     static final DecimalFormat df = new DecimalFormat("00");
+    String EXCEL_FILE_PATH = getClass().getClassLoader().getResource("Lehrer.xlsx").getPath();
+
+    private static final Logger logger = LoggerFactory.getLogger(Elternsprechtag.class);
 
     private Map<String, List<String>> lehrerzeiten = new HashMap<>();
 
+    String decodedPath = URLDecoder.decode(EXCEL_FILE_PATH, StandardCharsets.UTF_8);
+
+    public String leseZelle(int zeile, int spalte) {
+        try (FileInputStream file = new FileInputStream(new File(EXCEL_FILE_PATH));
+                Workbook workbook = new XSSFWorkbook(file)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            Row row = sheet.getRow(zeile);
+            if (row != null) {
+                Cell cell = row.getCell(spalte);
+                if (cell != null) {
+                    return cell.toString();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "Kein Wert gefunden";
+    }
+
+    public List<String> leseSpalte(int spalte) {
+        List<String> werte = new ArrayList<>();
+        try (FileInputStream file = new FileInputStream(new File(decodedPath));
+                Workbook workbook = new XSSFWorkbook(file)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            for (Row row : sheet) {
+                Cell cell = row.getCell(spalte);
+                if (cell != null) {
+                    werte.add(cell.toString());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return werte;
+
+    }
+
     public static void main(String[] args) {
+        logger.info("Debugging: API wurde aufgerufen!");
+        logger.debug("Hier ist eine Debug-Message!");
         SpringApplication.run(Elternsprechtag.class, args);
     }
 
     public Elternsprechtag() {
+        List<String> lehrerSpalte = new ArrayList<>();
+        List<String> lehrerKurz = new ArrayList<>();
+        lehrerSpalte = leseSpalte(8);
+        for (int j = 0; j < lehrerSpalte.size(); j++) {
+            if (!lehrerKurz.contains(lehrerSpalte.get(j))) {
+                lehrerKurz.add(lehrerSpalte.get(j));
+            }
+        }
+
         // Initialisiere die Lehrerzeiten
-        for (int i = 0; i < LEHRERANZAHL; i++) {
+        for (int i = 0; i < lehrerSpalte.size(); i++) {
             String[] zeiten = new String[DAUER / ABSCHNITTE];
             for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
                 zeiten[j] = "Frei";
             }
-            lehrerzeiten.put(lehrer[i], new ArrayList<>(Arrays.asList(zeiten)));
+            lehrerzeiten.put(lehrerSpalte.get(i), new ArrayList<>(Arrays.asList(zeiten)));
+
         }
+        logger.info(lehrerzeiten.toString());
     }
 
     // API-Endpunkt, um die freien Zeiten eines Lehrers zu bekommen

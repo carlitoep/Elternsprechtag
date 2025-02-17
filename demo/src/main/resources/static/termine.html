@@ -29,6 +29,7 @@
         })
           .then((response) => response.text())
           .then((data) => {
+            console.log(data);
             alert(data); // Antwort vom Server anzeigen
             window.location.href = "index.html"; // Zurück zur Startseite
           })

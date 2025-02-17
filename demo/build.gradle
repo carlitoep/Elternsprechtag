@@ -20,6 +20,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1' // JUnit 5 für Tests
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+    implementation 'org.apache.poi:poi:5.2.3'
 }
 
 tasks.named('test') {
