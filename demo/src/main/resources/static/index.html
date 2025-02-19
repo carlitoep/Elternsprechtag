@@ -7,17 +7,78 @@
     <script>
       function zeiten() {
         let name = document.getElementById("name").value;
-        let lehrer = document.getElementById("lehrername").value;
+        let lehrer = document.getElementById("dropdown").value;
 
-        if (name === "" || lehrer === "") {
-          alert("Bitte alle Felder ausfüllen!");
+      if (lehrer==null) {
+          alert("Bitte Lehrer angeben");
           return;
         }
+        console.log(lehrer)
+        
 
         localStorage.setItem("name", name);
         localStorage.setItem("lehrer", lehrer);
 
         window.location.href = "termine.html"; // Weiter zur zweiten Seite
+      }
+
+      function getLehrer(){
+        let name = document.getElementById("name").value;
+        if(name === ""){
+          alert("Bitte Namen angeben");
+          return;
+      }
+        let keinSchueler = false
+        let formData = new URLSearchParams();
+        formData.append("schuelername", name);
+        fetch("http://localhost:8080/api/schueler", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            let lehrerDesSchulers = JSON.parse(data)
+            console.log(lehrerDesSchulers)
+            if(lehrerDesSchulers.length==0){
+              alert("Bitte richtigen Namen angeben"); 
+              keinSchueler=true
+              return;
+            }
+          let dropdown = document.createElement("select")
+          let label = document.createElement("label")
+          label.textContent = "Lehrername:"
+          document.getElementById("lehrerdiv").appendChild(label)
+          dropdown.id="dropdown"
+          let placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.textContent = "Bitte Lehrer auswählen";
+          placeholder.disabled = true;
+          placeholder.selected = true;
+          dropdown.appendChild(placeholder);
+
+          lehrerDesSchulers.forEach(lehrer => {
+                let opt = document.createElement("option");
+                opt.value = lehrer.toLowerCase().replace(/\s+/g, "-"); // Wert setzen (klein & mit Bindestrichen)
+                opt.textContent = lehrer; // Sichtbarer Text
+                opt.value = lehrer
+                dropdown.appendChild(opt);
+            });
+            document.getElementById("lehrerdiv").appendChild(dropdown);
+            button(keinSchueler)
+          })
+          .catch((error) => console.error("Fehler:", error));
+          
+       
+         
+      }
+      function button(keinSchueler) {
+        if(keinSchueler){
+            return;
+          }else {
+          document.getElementById("button").onclick = zeiten
+          document.getElementById("button").textContent = "Freie Zeiten anzeigen"
+          }
       }
     </script>
   </head>
@@ -27,10 +88,10 @@
 
     <label for="name">Name:</label>
     <input type="text" id="name" name="name" required /><br /><br />
-
-    <label for="lehrername">Lehrername:</label>
-    <input type="text" id="lehrername" name="lehrername" required /><br /><br />
-    <button onclick="zeiten()">Freie Zeiten anzeigen</button>
+    <div id="lehrerdiv">
+    <br /><br />
+  </div>
+    <button id="button" onclick="getLehrer()">Lehrer anzeigen</button>
   </body>
   </div>
 </html>

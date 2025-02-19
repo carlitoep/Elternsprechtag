@@ -29,7 +29,6 @@ public class Elternsprechtag {
     static final int DAUER = 120;
     static final int ABSCHNITTE = 10;
     static final int START = 17;
-    static final String[] lehrer = { "Michel", "Staudinger", "Paulmann", "Merk", "Rappolt" };
     static final DecimalFormat df = new DecimalFormat("00");
     String EXCEL_FILE_PATH = getClass().getClassLoader().getResource("Lehrer.xlsx").getPath();
 
@@ -40,7 +39,7 @@ public class Elternsprechtag {
     String decodedPath = URLDecoder.decode(EXCEL_FILE_PATH, StandardCharsets.UTF_8);
 
     public String leseZelle(int zeile, int spalte) {
-        try (FileInputStream file = new FileInputStream(new File(EXCEL_FILE_PATH));
+        try (FileInputStream file = new FileInputStream(new File(decodedPath));
                 Workbook workbook = new XSSFWorkbook(file)) {
 
             Sheet sheet = workbook.getSheetAt(0);
@@ -76,6 +75,19 @@ public class Elternsprechtag {
 
     }
 
+    public List<String> getLehrer(String schuelername) {
+        List<String> lehrer = new ArrayList<>();
+        List<String> schuelerSpalte = new ArrayList<>();
+        schuelerSpalte = leseSpalte(2);
+        logger.info(schuelerSpalte.toString());
+        for (int i = 0; i < schuelerSpalte.size(); i++) {
+            if (schuelerSpalte.get(i).equals(schuelername)) {
+                lehrer.add(leseZelle(i, 8));
+            }
+        }
+        return lehrer;
+    }
+
     public static void main(String[] args) {
         logger.info("Debugging: API wurde aufgerufen!");
         logger.debug("Hier ist eine Debug-Message!");
@@ -101,7 +113,6 @@ public class Elternsprechtag {
             lehrerzeiten.put(lehrerSpalte.get(i), new ArrayList<>(Arrays.asList(zeiten)));
 
         }
-        logger.info(lehrerzeiten.toString());
     }
 
     // API-Endpunkt, um die freien Zeiten eines Lehrers zu bekommen
@@ -109,6 +120,11 @@ public class Elternsprechtag {
     public List<String> freieZeiten(@RequestParam String lehrername) {
         List<String> freieZeiten = new ArrayList<>();
         // boolean keineZeit = true;
+        logger.info(lehrerzeiten.keySet().toString());
+
+        if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) == null) {
+            return List.of("Fehler: Lehrer nicht gefunden");
+        }
 
         for (int k = 0; k < lehrerzeiten.get(lehrername).size(); k++) {
             if (lehrerzeiten.get(lehrername).get(k).equals("Frei")) {
@@ -139,6 +155,8 @@ public class Elternsprechtag {
         int index = ((Integer.parseInt(urzeitArray[0]) * 60 + Integer.parseInt(urzeitArray[1])) - START * 60)
                 / ABSCHNITTE;
 
+        if (lehrerzeiten.get(lehrername).contains(name))
+            return "Du hast schon einen Termin bei diesem Lehrer";
         if (zeitenNeu[index].equals("Frei")) {
             zeitenNeu[index] = name;
             lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeitenNeu)));
@@ -151,11 +169,19 @@ public class Elternsprechtag {
 
     @PostMapping("/lehrer")
     public List<String> lehrerTermine(@RequestParam String lehrername) {
+
         List<String> lehrerTermine = new ArrayList<>();
         for (int i = 0; i < lehrerzeiten.get(lehrername).size(); i++) {
             lehrerTermine.add((((i * ABSCHNITTE) + START * 60) / 60) + ":"
                     + (df.format(((i * ABSCHNITTE) + START * 60) % 60)) + ":" + lehrerzeiten.get(lehrername).get(i));
         }
         return lehrerTermine;
+    }
+
+    @PostMapping("/schueler")
+    public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
+        List<String> lehrerDesSchuelers = new ArrayList<>();
+        lehrerDesSchuelers = getLehrer(schuelername);
+        return lehrerDesSchuelers;
     }
 }
