@@ -60,6 +60,7 @@
             for (let element of zeitenArray) {
               let p = document.createElement("p");
               let div = document.createElement("div");
+              div.id = element;
               div.classList.add("termin-box");
               p.id = `p${zeitenArray.indexOf(element)}`;
               p.textContent = element;
@@ -75,11 +76,88 @@
                 };
                 div.appendChild(button);
                 div.style.backgroundColor = "green";
+              } else {
+                button(zeitenArray);
               }
             }
           })
           .catch((error) => console.error("Fehler:", error));
       };
+      function button(zeitenArray) {
+        let formData = new URLSearchParams();
+        let name = localStorage.getItem("name");
+        let lehrer = localStorage.getItem("lehrer");
+        let urzeit = `${17}:${0}`;
+        formData.append("name", name);
+        formData.append("lehrername", lehrer);
+        formData.append("urzeit", urzeit);
+        fetch("http://localhost:8080/api/buchen", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data);
+            if (data == "Du hast schon einen Termin bei diesem Lehrer") {
+              for (let element of zeitenArray) {
+                let teile = element.split(":");
+                if (teile[2] == "belegt") {
+                  let stelle = zeitenArray.indexOf(element);
+                  löschbar(stelle, zeitenArray);
+                }
+              }
+            }
+          })
+          .catch((error) => console.error("Fehler:", error));
+      }
+
+      function löschbar(stelle, zeitenArray) {
+        let name = localStorage.getItem("name");
+        let lehrer = localStorage.getItem("lehrer");
+        let formData = new URLSearchParams();
+        formData.append("name", name);
+        formData.append("lehrername", lehrer);
+        formData.append("stelle", stelle);
+        fetch("http://localhost:8080/api/loeschenmoeglich", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data);
+            if (data == "löschbar") {
+              let button = document.createElement("button");
+              button.textContent = "Termin löschen";
+              button.onclick = function () {
+                löscheTermin(stelle);
+              };
+              document.getElementById(zeitenArray[stelle]).appendChild(button);
+            }
+          })
+          .catch((error) => console.error("Fehler:", error));
+      }
+
+      function löscheTermin(stelle) {
+        let formData = new URLSearchParams();
+        let name = localStorage.getItem("name");
+        let lehrer = localStorage.getItem("lehrer");
+        formData.append("name", name);
+        formData.append("lehrername", lehrer);
+        formData.append("stelle", stelle);
+        fetch("http://localhost:8080/api/loeschen", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            alert(data);
+            window.location.href = "index.html";
+          })
+          .catch((error) => console.error("Fehler:", error));
+      }
     </script>
   </head>
   <body>

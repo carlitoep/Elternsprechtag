@@ -18,6 +18,7 @@ import java.util.Map;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
+import java.util.Arrays;
 
 @SpringBootApplication
 @RestController
@@ -183,5 +184,42 @@ public class Elternsprechtag {
         List<String> lehrerDesSchuelers = new ArrayList<>();
         lehrerDesSchuelers = getLehrer(schuelername);
         return lehrerDesSchuelers;
+    }
+
+    @PostMapping("/loeschen")
+    public String loescheTermin(@RequestParam String name, @RequestParam String lehrername,
+            @RequestParam int stelle) {
+        String[] zeitenNeu = new String[DAUER / ABSCHNITTE];
+        for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
+            zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
+        }
+        if (name.equals(zeitenNeu[stelle])) {
+            zeitenNeu[stelle] = "Frei";
+            lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeitenNeu)));
+
+            return "Dein Termin wurde gelöscht";
+        } else {
+            return "Diesen Termin hast du nicht gebucht";
+        }
+    }
+
+    @PostMapping("/loeschenmoeglich")
+    public String loeschenmoeglich(@RequestParam String name, @RequestParam String lehrername,
+            @RequestParam int stelle) {
+        String[] zeitenNeu = new String[DAUER / ABSCHNITTE];
+        for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
+            zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
+        }
+        if (name.equals(zeitenNeu[stelle])) {
+
+            return "löschbar";
+        } else {
+            logger.info(Arrays.toString(zeitenNeu));
+            logger.info(String.valueOf(stelle));
+            logger.info(name);
+            logger.info(zeitenNeu[0]);
+            return "unlöschbar";
+
+        }
     }
 }
