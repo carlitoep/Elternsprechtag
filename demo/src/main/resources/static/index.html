@@ -80,6 +80,32 @@
           document.getElementById("button").textContent = "Freie Zeiten anzeigen"
           }
       }
+
+      function überprüfung(){
+        let formData = new URLSearchParams();
+        let name = document.getElementById("name").value;
+        let geburtsdatum = document.getElementById("geburtsdatum").value;
+        let straße = document.getElementById("straße").value;
+        formData.append("schuelername", name);
+        formData.append("geburtsdatum", geburtsdatum);
+        formData.append("straße", straße);
+        fetch("http://localhost:8080/api/berechtigt", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data)
+            if(data=="true"){
+              getLehrer()
+            } else {
+              alert("Geben sie das richtige Geburtsdatum oder den richtigen Straßennamen ein")
+              return
+            }
+          })
+          .catch((error) => console.error("Fehler:", error));
+      }
     </script>
   </head>
   <body>
@@ -88,10 +114,15 @@
 
     <label for="name">Name:</label>
     <input type="text" id="name" name="name" required /><br /><br />
+    <h3 >Sicherheitsabfrage</h3>
+    <label for="geburtsdatum">Geburtstadum:</label>
+    <input type="text" id="geburtsdatum" name="geburtsdatum" required /><br /><br />
+    <label for="straße">ersten 4 Zeichen deiner Straße:</label>
+    <input type="text" id="straße" name="straße" required /><br /><br />
     <div id="lehrerdiv">
     <br /><br />
   </div>
-    <button id="button" onclick="getLehrer()">Lehrer anzeigen</button>
+    <button id="button" onclick="überprüfung()">Lehrer anzeigen</button>
   </body>
   </div>
 </html>

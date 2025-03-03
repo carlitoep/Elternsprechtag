@@ -32,15 +32,19 @@ public class Elternsprechtag {
     static final int START = 17;
     static final DecimalFormat df = new DecimalFormat("00");
     String EXCEL_FILE_PATH = getClass().getClassLoader().getResource("Lehrer.xlsx").getPath();
+    String EXCEL_FILE_PATH2 = getClass().getClassLoader().getResource("Raum.xlsx").getPath();
+    String EXCEL_FILE_PATH3 = getClass().getClassLoader().getResource("Sicherheit.xlsx").getPath();
 
     private static final Logger logger = LoggerFactory.getLogger(Elternsprechtag.class);
 
     private Map<String, List<String>> lehrerzeiten = new HashMap<>();
 
     String decodedPath = URLDecoder.decode(EXCEL_FILE_PATH, StandardCharsets.UTF_8);
+    String decodedPath2 = URLDecoder.decode(EXCEL_FILE_PATH2, StandardCharsets.UTF_8);
+    String decodedPath3 = URLDecoder.decode(EXCEL_FILE_PATH3, StandardCharsets.UTF_8);
 
-    public String leseZelle(int zeile, int spalte) {
-        try (FileInputStream file = new FileInputStream(new File(decodedPath));
+    public String leseZelle(int zeile, int spalte, String decodedPath0) {
+        try (FileInputStream file = new FileInputStream(new File(decodedPath0));
                 Workbook workbook = new XSSFWorkbook(file)) {
 
             Sheet sheet = workbook.getSheetAt(0);
@@ -57,9 +61,9 @@ public class Elternsprechtag {
         return "Kein Wert gefunden";
     }
 
-    public List<String> leseSpalte(int spalte) {
+    public List<String> leseSpalte(int spalte, String decodedPath0) {
         List<String> werte = new ArrayList<>();
-        try (FileInputStream file = new FileInputStream(new File(decodedPath));
+        try (FileInputStream file = new FileInputStream(new File(decodedPath0));
                 Workbook workbook = new XSSFWorkbook(file)) {
 
             Sheet sheet = workbook.getSheetAt(0);
@@ -79,13 +83,23 @@ public class Elternsprechtag {
     public List<String> getLehrer(String schuelername) {
         List<String> lehrer = new ArrayList<>();
         List<String> schuelerSpalte = new ArrayList<>();
-        schuelerSpalte = leseSpalte(2);
+        List<String> lehrerKurz = new ArrayList<>();
+        lehrerKurz = leseSpalte(0, decodedPath2);
+        schuelerSpalte = leseSpalte(2, decodedPath);
         logger.info(schuelerSpalte.toString());
         for (int i = 0; i < schuelerSpalte.size(); i++) {
             if (schuelerSpalte.get(i).equals(schuelername)) {
-                lehrer.add(leseZelle(i, 8));
+                if (lehrerKurz.contains(leseZelle(i, 8, decodedPath))) {
+                    int index = lehrerKurz.indexOf(leseZelle(i, 8, decodedPath));
+                    if (leseZelle(index, 1, decodedPath2) != null && leseZelle(index, 1, decodedPath2) != "") {
+                        lehrer.add(leseZelle(index, 1, decodedPath2) + " " + leseZelle(i, 9, decodedPath));
+                        continue;
+                    }
+                }
+                lehrer.add(leseZelle(i, 8, decodedPath));
             }
         }
+
         return lehrer;
     }
 
@@ -96,24 +110,20 @@ public class Elternsprechtag {
     }
 
     public Elternsprechtag() {
-        List<String> lehrerSpalte = new ArrayList<>();
-        List<String> lehrerKurz = new ArrayList<>();
-        lehrerSpalte = leseSpalte(8);
-        for (int j = 0; j < lehrerSpalte.size(); j++) {
-            if (!lehrerKurz.contains(lehrerSpalte.get(j))) {
-                lehrerKurz.add(lehrerSpalte.get(j));
-            }
-        }
+
+        List<String> langnamen = new ArrayList<>();
+        langnamen = leseSpalte(1, decodedPath2);
 
         // Initialisiere die Lehrerzeiten
-        for (int i = 0; i < lehrerSpalte.size(); i++) {
+        for (int i = 0; i < langnamen.size(); i++) {
             String[] zeiten = new String[DAUER / ABSCHNITTE];
             for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
                 zeiten[j] = "Frei";
             }
-            lehrerzeiten.put(lehrerSpalte.get(i), new ArrayList<>(Arrays.asList(zeiten)));
+            lehrerzeiten.put(langnamen.get(i), new ArrayList<>(Arrays.asList(zeiten)));
 
         }
+        logger.info(lehrerzeiten.toString());
     }
 
     // API-Endpunkt, um die freien Zeiten eines Lehrers zu bekommen
@@ -221,5 +231,27 @@ public class Elternsprechtag {
             return "unlöschbar";
 
         }
+    }
+
+    @PostMapping("/raum")
+    public String raum(@RequestParam String lehrername) {
+        String raum = leseZelle(leseSpalte(1, decodedPath2).indexOf(lehrername), 2, decodedPath2);
+        return raum;
+    }
+
+    @PostMapping("/berechtigt")
+    public boolean berechtigt(@RequestParam String schuelername, @RequestParam String geburtsdatum,
+            @RequestParam String straße) {
+        int index = leseSpalte(0, decodedPath3).indexOf(schuelername);
+        String geburtsdatumString = leseZelle(index, 1, decodedPath3);
+        String straßenName = leseZelle(index, 2, decodedPath3);
+        logger.info(geburtsdatumString);
+        logger.info(geburtsdatum);
+        logger.info(straßenName);
+        logger.info((straßenName.length() >= 4 ? straßenName.substring(0, 4) : straßenName));
+        logger.info((straßenName.length() >= 4 ? straßenName.substring(0, 4) : straßenName));
+        logger.info(straße);
+        return geburtsdatumString.equals(geburtsdatum) && straße.length() >= 4
+                && straßenName.toLowerCase().startsWith(straße.toLowerCase());
     }
 }
