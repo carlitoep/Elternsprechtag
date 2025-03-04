@@ -82,3 +82,28 @@ p {
     font-size: 18px;
     font-weight: bold;
 }
+
+select {
+    padding: 12px;
+    font-size: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+select:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+select:hover {
+    border-color: #4caf50;
+}
+
+option {
+    padding: 10px;
+}
