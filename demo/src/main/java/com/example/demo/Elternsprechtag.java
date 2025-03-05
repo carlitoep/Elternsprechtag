@@ -123,7 +123,7 @@ public class Elternsprechtag {
         for (int i = 0; i < langnamen.size(); i++) {
             String[] zeiten = new String[DAUER / ABSCHNITTE];
             for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
-                zeiten[j] = "Frei";
+                zeiten[j] = "frei";
             }
             lehrerzeiten.put(langnamen.get(i), new ArrayList<>(Arrays.asList(zeiten)));
         }
