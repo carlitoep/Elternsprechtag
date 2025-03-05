@@ -134,11 +134,9 @@ public class Elternsprechtag {
         logger.info(lehrerzeiten.toString());
     }
 
-    // API-Endpunkt, um die freien Zeiten eines Lehrers zu bekommen
     @PostMapping("/zeiten")
     public List<String> freieZeiten(@RequestParam String lehrername) {
         List<String> freieZeiten = new ArrayList<>();
-        // boolean keineZeit = true;
         logger.info(lehrerzeiten.keySet().toString());
 
         if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) == null) {
@@ -156,9 +154,6 @@ public class Elternsprechtag {
             }
         }
 
-        // if (keineZeit) {
-        // freieZeiten.add(lehrername + " hat keine freien Zeiten.");
-        // }
         return freieZeiten;
     }
 
