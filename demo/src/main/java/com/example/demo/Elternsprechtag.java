@@ -87,7 +87,6 @@ public class Elternsprechtag {
         List<String> lehrerKurz = new ArrayList<>();
         lehrerKurz = leseSpalte(0, decodedPath2);
         schuelerSpalte = leseSpalte(2, decodedPath);
-        logger.info(schuelerSpalte.toString());
         for (int i = 0; i < schuelerSpalte.size(); i++) {
             if (schuelerSpalte.get(i).toLowerCase().equals(schuelername.toLowerCase())) {
                 if (lehrerKurz.contains(leseZelle(i, 8, decodedPath))) {
@@ -112,8 +111,6 @@ public class Elternsprechtag {
     }
 
     public static void main(String[] args) {
-        logger.info("Debugging: API wurde aufgerufen!");
-        logger.debug("Hier ist eine Debug-Message!");
         SpringApplication.run(Elternsprechtag.class, args);
     }
 
@@ -129,15 +126,12 @@ public class Elternsprechtag {
                 zeiten[j] = "Frei";
             }
             lehrerzeiten.put(langnamen.get(i), new ArrayList<>(Arrays.asList(zeiten)));
-
         }
-        logger.info(lehrerzeiten.toString());
     }
 
     @PostMapping("/zeiten")
     public List<String> freieZeiten(@RequestParam String lehrername) {
         List<String> freieZeiten = new ArrayList<>();
-        logger.info(lehrerzeiten.keySet().toString());
 
         if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) == null) {
             return List.of("Fehler: Lehrer nicht gefunden");
@@ -227,10 +221,6 @@ public class Elternsprechtag {
 
             return "löschbar";
         } else {
-            logger.info(Arrays.toString(zeitenNeu));
-            logger.info(String.valueOf(stelle));
-            logger.info(name);
-            logger.info(zeitenNeu[0]);
             return "unlöschbar";
 
         }
@@ -249,12 +239,6 @@ public class Elternsprechtag {
         int index = leseSpalte(0, decodedPath3).indexOf(schuelername);
         String geburtsdatumString = leseZelle(index, 1, decodedPath3);
         String straßenName = leseZelle(index, 2, decodedPath3);
-        logger.info(geburtsdatumString);
-        logger.info(geburtsdatum);
-        logger.info(straßenName);
-        logger.info((straßenName.length() >= 4 ? straßenName.substring(0, 4) : straßenName));
-        logger.info((straßenName.length() >= 4 ? straßenName.substring(0, 4) : straßenName));
-        logger.info(straße);
         return geburtsdatumString.equals(geburtsdatum) && straße.length() >= 4
                 && straßenName.toLowerCase().startsWith(straße.toLowerCase());
     }
