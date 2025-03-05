@@ -81,6 +81,7 @@ public class Elternsprechtag {
     }
 
     public List<String> getLehrer(String schuelername) {
+        schuelername = capitalizeFirstLetter(schuelername);
         List<String> lehrer = new ArrayList<>();
         List<String> schuelerSpalte = new ArrayList<>();
         List<String> lehrerKurz = new ArrayList<>();
@@ -88,7 +89,7 @@ public class Elternsprechtag {
         schuelerSpalte = leseSpalte(2, decodedPath);
         logger.info(schuelerSpalte.toString());
         for (int i = 0; i < schuelerSpalte.size(); i++) {
-            if (schuelerSpalte.get(i).equals(schuelername)) {
+            if (schuelerSpalte.get(i).toLowerCase().equals(schuelername.toLowerCase())) {
                 if (lehrerKurz.contains(leseZelle(i, 8, decodedPath))) {
                     int index = lehrerKurz.indexOf(leseZelle(i, 8, decodedPath));
                     if (leseZelle(index, 1, decodedPath2) != null && leseZelle(index, 1, decodedPath2) != "") {
@@ -96,11 +97,18 @@ public class Elternsprechtag {
                         continue;
                     }
                 }
-                lehrer.add(leseZelle(i, 8, decodedPath));
+                lehrer.add(leseZelle(i, 8, decodedPath) + " " + leseZelle(i, 9, decodedPath));
             }
         }
 
         return lehrer;
+    }
+
+    public static String capitalizeFirstLetter(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
     public static void main(String[] args) {
@@ -180,7 +188,7 @@ public class Elternsprechtag {
 
     @PostMapping("/lehrer")
     public List<String> lehrerTermine(@RequestParam String lehrername) {
-
+        lehrername = capitalizeFirstLetter(lehrername);
         List<String> lehrerTermine = new ArrayList<>();
         for (int i = 0; i < lehrerzeiten.get(lehrername).size(); i++) {
             lehrerTermine.add((((i * ABSCHNITTE) + START * 60) / 60) + ":"
@@ -242,6 +250,7 @@ public class Elternsprechtag {
     @PostMapping("/berechtigt")
     public boolean berechtigt(@RequestParam String schuelername, @RequestParam String geburtsdatum,
             @RequestParam String straße) {
+        schuelername = capitalizeFirstLetter(schuelername);
         int index = leseSpalte(0, decodedPath3).indexOf(schuelername);
         String geburtsdatumString = leseZelle(index, 1, decodedPath3);
         String straßenName = leseZelle(index, 2, decodedPath3);

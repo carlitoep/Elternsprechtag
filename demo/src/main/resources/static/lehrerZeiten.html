@@ -9,8 +9,21 @@
       let lehrerName = localStorage.getItem("lehrerName");
 
       window.onload = function () {
-        document.getElementById("info").innerText =
-          "Termine von " + localStorage.getItem("lehrerName");
+        let formData2 = new URLSearchParams();
+        formData2.append("lehrername", lehrerName);
+        fetch("http://localhost:8080/api/raum", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData2,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data);
+            document.getElementById("info").innerText =
+              "Termine von " + lehrerName + " in " + data;
+          })
+          .catch((error) => console.error("Fehler:", error));
+
         let formData = new URLSearchParams();
         formData.append("lehrername", lehrerName);
 
@@ -30,6 +43,10 @@
               let container = document.getElementById("container");
               container.appendChild(div);
               div.appendChild(p);
+              let teile = element.split(":");
+              if (teile[2] == "Frei") {
+                div.style.backgroundColor = "green";
+              }
             }
           })
           .catch((error) => console.error("Fehler:", error));
