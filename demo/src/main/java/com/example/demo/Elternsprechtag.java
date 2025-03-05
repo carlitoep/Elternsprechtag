@@ -138,7 +138,7 @@ public class Elternsprechtag {
         }
 
         for (int k = 0; k < lehrerzeiten.get(lehrername).size(); k++) {
-            if (lehrerzeiten.get(lehrername).get(k).equals("Frei")) {
+            if (lehrerzeiten.get(lehrername).get(k).equals("frei")) {
                 // keineZeit = false;
                 freieZeiten.add((((k * ABSCHNITTE) + START * 60) / 60) + ":"
                         + (df.format(((k * ABSCHNITTE) + START * 60) % 60)) + ":frei");
@@ -165,7 +165,7 @@ public class Elternsprechtag {
 
         if (lehrerzeiten.get(lehrername).contains(name))
             return "Du hast schon einen Termin bei diesem Lehrer";
-        if (zeitenNeu[index].equals("Frei")) {
+        if (zeitenNeu[index].equals("frei")) {
             zeitenNeu[index] = name;
             lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeitenNeu)));
             return "Termin für " + name + " bei " + lehrername + " um " + urzeit + " wurde erfolgreich gebucht.";
@@ -201,7 +201,7 @@ public class Elternsprechtag {
             zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
         }
         if (name.equals(zeitenNeu[stelle])) {
-            zeitenNeu[stelle] = "Frei";
+            zeitenNeu[stelle] = "frei";
             lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeitenNeu)));
 
             return "Dein Termin wurde gelöscht";
