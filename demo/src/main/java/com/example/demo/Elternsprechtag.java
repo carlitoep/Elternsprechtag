@@ -175,6 +175,17 @@ public class Elternsprechtag {
 
     }
 
+    @PostMapping("/buchenMoeglich")
+    public String buchenMoeglich(@RequestParam String name, @RequestParam String lehrername) {
+
+        if (lehrerzeiten.get(lehrername).contains(name)) {
+            return "nicht möglich";
+        } else {
+            return "möglich";
+        }
+
+    }
+
     @PostMapping("/lehrer")
     public List<String> lehrerTermine(@RequestParam String lehrername) {
         lehrername = capitalizeFirstLetter(lehrername);

@@ -13,17 +13,17 @@
           " " +
           localStorage.getItem("lehrer").split(" ")[1];
         console.log(lehrer);
-        let urzeit = `${stunden}:${minuten}`;
-        if (!urzeit) {
+        let uhrzeit = `${stunden}:${minuten}`;
+        if (!uhrzeit) {
           alert("Bitte eine Uhrzeit eingeben!");
           return;
         }
-
+        console.log(uhrzeit);
         // Daten als Formulardaten senden
         let formData = new URLSearchParams();
         formData.append("name", name);
         formData.append("lehrername", lehrer);
-        formData.append("urzeit", urzeit);
+        formData.append("urzeit", uhrzeit);
 
         fetch("http://localhost:8080/api/buchen", {
           method: "POST",
@@ -34,7 +34,7 @@
           .then((data) => {
             console.log(data);
             alert(data); // Antwort vom Server anzeigen
-            window.location.href = "index.html"; // Zurück zur Startseite
+            //window.location.href = "index.html"; // Zurück zur Startseite
           })
           .catch((error) => console.error("Fehler:", error));
       }
@@ -77,6 +77,7 @@
             let zeitenArray = JSON.parse(data);
             console.log(zeitenArray);
             for (let element of zeitenArray) {
+              let stelle = zeitenArray.indexOf(element);
               let p = document.createElement("p");
               let div = document.createElement("div");
               div.id = element;
@@ -96,24 +97,24 @@
                 div.appendChild(button);
                 div.style.backgroundColor = "green";
               } else {
-                button(zeitenArray);
+                button(zeitenArray, stelle);
               }
             }
           })
           .catch((error) => console.error("Fehler:", error));
       };
-      function button(zeitenArray) {
+      function button(zeitenArray, stelle) {
         let formData = new URLSearchParams();
         let name = localStorage.getItem("name");
         let lehrer =
           localStorage.getItem("lehrer").split(" ")[0] +
           " " +
           localStorage.getItem("lehrer").split(" ")[1];
-        let urzeit = `${17}:${0}`;
+
         formData.append("name", name);
         formData.append("lehrername", lehrer);
-        formData.append("urzeit", urzeit);
-        fetch("http://localhost:8080/api/buchen", {
+
+        fetch("http://localhost:8080/api/buchenMoeglich", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData,
@@ -121,11 +122,11 @@
           .then((response) => response.text())
           .then((data) => {
             console.log(data);
-            if (data == "Du hast schon einen Termin bei diesem Lehrer") {
+            if (data == "nicht möglich") {
               for (let element of zeitenArray) {
                 let teile = element.split(":");
-                if (teile[2] == "belegt") {
-                  let stelle = zeitenArray.indexOf(element);
+                let stelle1 = zeitenArray.indexOf(element);
+                if (teile[2] == "belegt" && stelle == stelle1) {
                   löschbar(stelle, zeitenArray);
                 }
               }
