@@ -38,6 +38,7 @@ public class Elternsprechtag {
     private static final Logger logger = LoggerFactory.getLogger(Elternsprechtag.class);
 
     private Map<String, List<String>> lehrerzeiten = new HashMap<>();
+    private Map<String, int[]> startzeiten = new HashMap<>();
 
     String decodedPath = URLDecoder.decode(EXCEL_FILE_PATH, StandardCharsets.UTF_8);
     String decodedPath2 = URLDecoder.decode(EXCEL_FILE_PATH2, StandardCharsets.UTF_8);
@@ -126,12 +127,16 @@ public class Elternsprechtag {
                 zeiten[j] = "frei";
             }
             lehrerzeiten.put(langnamen.get(i), new ArrayList<>(Arrays.asList(zeiten)));
+            startzeiten.put(langnamen.get(i), new int[] { START, 0 });
         }
     }
 
     @PostMapping("/zeiten")
     public List<String> freieZeiten(@RequestParam String lehrername) {
         List<String> freieZeiten = new ArrayList<>();
+
+        int anfangS = startzeiten.get(lehrername)[0];
+        int anfangM = startzeiten.get(lehrername)[1];
 
         if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) == null) {
             return List.of("Fehler: Lehrer nicht gefunden");
@@ -140,11 +145,11 @@ public class Elternsprechtag {
         for (int k = 0; k < lehrerzeiten.get(lehrername).size(); k++) {
             if (lehrerzeiten.get(lehrername).get(k).equals("frei")) {
                 // keineZeit = false;
-                freieZeiten.add((((k * ABSCHNITTE) + START * 60) / 60) + ":"
-                        + (df.format(((k * ABSCHNITTE) + START * 60) % 60)) + ":frei");
+                freieZeiten.add(((((k + anfangM) * ABSCHNITTE) + anfangS * 60) / 60) + ":"
+                        + (df.format((((k + anfangM) * ABSCHNITTE) + anfangS * 60) % 60)) + ":frei");
             } else {
-                freieZeiten.add((((k * ABSCHNITTE) + START * 60) / 60) + ":"
-                        + (df.format(((k * ABSCHNITTE) + START * 60) % 60)) + ":belegt");
+                freieZeiten.add(((((k + anfangM) * ABSCHNITTE) + anfangS * 60) / 60) + ":"
+                        + (df.format((((k + anfangM) * ABSCHNITTE) + anfangS * 60) % 60)) + ":belegt");
             }
         }
 
@@ -154,13 +159,16 @@ public class Elternsprechtag {
     @PostMapping("/buchen")
     public String bucheTermin(@RequestParam String name, @RequestParam String lehrername, @RequestParam String urzeit) {
         String[] urzeitArray = urzeit.split(":");
-        String[] zeitenNeu = new String[DAUER / ABSCHNITTE];
+        String[] zeitenNeu = new String[lehrerzeiten.get(lehrername).size()];
+        int anfangS = startzeiten.get(lehrername)[0];
+        int anfangM = startzeiten.get(lehrername)[1];
 
-        for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
+        for (int j = 0; j < lehrerzeiten.get(lehrername).size(); j++) {
             zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
         }
 
-        int index = ((Integer.parseInt(urzeitArray[0]) * 60 + Integer.parseInt(urzeitArray[1])) - START * 60)
+        int index = ((Integer.parseInt(urzeitArray[0]) * 60 + Integer.parseInt(urzeitArray[1])) - anfangS * 60
+                + anfangM)
                 / ABSCHNITTE;
 
         if (lehrerzeiten.get(lehrername).contains(name))
@@ -189,10 +197,13 @@ public class Elternsprechtag {
     @PostMapping("/lehrer")
     public List<String> lehrerTermine(@RequestParam String lehrername) {
         lehrername = capitalizeFirstLetter(lehrername);
+        int anfangS = startzeiten.get(lehrername)[0];
+        int anfangM = startzeiten.get(lehrername)[1];
         List<String> lehrerTermine = new ArrayList<>();
         for (int i = 0; i < lehrerzeiten.get(lehrername).size(); i++) {
-            lehrerTermine.add((((i * ABSCHNITTE) + START * 60) / 60) + ":"
-                    + (df.format(((i * ABSCHNITTE) + START * 60) % 60)) + ":" + lehrerzeiten.get(lehrername).get(i));
+            lehrerTermine.add(((((i + anfangM) * ABSCHNITTE) + anfangS * 60) / 60) + ":"
+                    + (df.format((((i + anfangM) * ABSCHNITTE) + anfangS * 60) % 60)) + ":"
+                    + lehrerzeiten.get(lehrername).get(i));
         }
         return lehrerTermine;
     }
@@ -207,8 +218,8 @@ public class Elternsprechtag {
     @PostMapping("/loeschen")
     public String loescheTermin(@RequestParam String name, @RequestParam String lehrername,
             @RequestParam int stelle) {
-        String[] zeitenNeu = new String[DAUER / ABSCHNITTE];
-        for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
+        String[] zeitenNeu = new String[lehrerzeiten.get(lehrername).size()];
+        for (int j = 0; j < lehrerzeiten.get(lehrername).size(); j++) {
             zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
         }
         if (name.equals(zeitenNeu[stelle])) {
@@ -224,8 +235,8 @@ public class Elternsprechtag {
     @PostMapping("/loeschenmoeglich")
     public String loeschenmoeglich(@RequestParam String name, @RequestParam String lehrername,
             @RequestParam int stelle) {
-        String[] zeitenNeu = new String[DAUER / ABSCHNITTE];
-        for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
+        String[] zeitenNeu = new String[lehrerzeiten.get(lehrername).size()];
+        for (int j = 0; j < lehrerzeiten.get(lehrername).size(); j++) {
             zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
         }
         if (name.equals(zeitenNeu[stelle])) {
@@ -252,5 +263,31 @@ public class Elternsprechtag {
         String straßenName = leseZelle(index, 2, decodedPath3);
         return geburtsdatumString.equals(geburtsdatum) && straße.length() >= 4
                 && straßenName.toLowerCase().startsWith(straße.toLowerCase());
+    }
+
+    @PostMapping("/zeitenAendern")
+    public List<String> zeitenAendern(@RequestParam String lehrername, @RequestParam Integer anfangS,
+            @RequestParam Integer anfangM,
+            @RequestParam Integer endeS, @RequestParam Integer endeM) {
+        List<String> neueZeiten = new ArrayList<>();
+
+        if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) == null) {
+            return List.of("Fehler: Lehrer nicht gefunden");
+        }
+        Integer neueDauer = (endeS * 60 + endeM) - (anfangS * 60 + anfangM);
+
+        String[] zeiten = new String[neueDauer / ABSCHNITTE];
+
+        for (int j = 0; j < neueDauer / ABSCHNITTE; j++) {
+            zeiten[j] = "frei";
+        }
+        lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeiten)));
+
+        for (int i = 0; i < zeiten.length; i++) {
+            neueZeiten.add((((i * ABSCHNITTE) + anfangS * 60) / 60) + ":"
+                    + (df.format((((i + anfangM / 10) * ABSCHNITTE) + anfangS * 60) % 60)) + ":frei");
+        }
+
+        return neueZeiten;
     }
 }

@@ -51,11 +51,54 @@
           })
           .catch((error) => console.error("Fehler:", error));
       };
+
+      function zeitÄndern() {
+        let anfang = document.getElementById("anfang").value;
+        let ende = document.getElementById("ende").value;
+
+        let formData = new URLSearchParams();
+        formData.append("lehrername", lehrerName);
+        formData.append("anfangS", anfang.split(":")[0]);
+        formData.append("endeS", ende.split(":")[0]);
+        formData.append("anfangM", anfang.split(":")[1]);
+        formData.append("endeM", ende.split(":")[1]);
+
+        fetch("http://localhost:8080/api/zeitenAendern", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data);
+            document
+              .querySelectorAll(".termin-box2")
+              .forEach((element) => element.remove());
+            let array = JSON.parse(data);
+            for (let element of array) {
+              let p = document.createElement("p");
+              let div = document.createElement("div");
+              div.classList.add("termin-box2");
+              p.innerText = element;
+              let container = document.getElementById("container");
+              container.appendChild(div);
+              div.appendChild(p);
+              let teile = element.split(":");
+              if (teile[2] == "frei") {
+                div.style.backgroundColor = "green";
+              }
+            }
+          });
+      }
     </script>
   </head>
   <body>
     <div id="container" class="container">
       <p id="info"></p>
+      <label for="Zeit">Zeit begrenzen</label>
+      <input type="text" id="anfang" placeholder="Anfangszeit(XX:XX)" />
+      <input type="text" id="ende" placeholder="Endzeit(XX:XX)" />
+      <button onclick="zeitÄndern()">Zeiten ändern</button>
     </div>
   </body>
 </html>
