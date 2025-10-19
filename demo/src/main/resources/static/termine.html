@@ -87,23 +87,12 @@
               let container = document.getElementById("container");
               container.appendChild(div);
               div.appendChild(p);
-              let teile = element.split(":");
-              if (teile[2] == "frei") {
-                let button = document.createElement("button");
-                button.textContent = "Termin buchen";
-                button.onclick = function () {
-                  bucheTermin(teile[0], teile[1]);
-                };
-                div.appendChild(button);
-                div.style.backgroundColor = "green";
-              } else {
-                button(zeitenArray, stelle);
-              }
+              button(zeitenArray, element, stelle, div);
             }
           })
           .catch((error) => console.error("Fehler:", error));
       };
-      function button(zeitenArray, stelle) {
+      function button(zeitenArray, element, stelle, div) {
         let formData = new URLSearchParams();
         let name = localStorage.getItem("name");
         let lehrer =
@@ -122,20 +111,52 @@
           .then((response) => response.text())
           .then((data) => {
             console.log(data);
-            if (data == "nicht möglich") {
-              for (let element of zeitenArray) {
+            console.log(element);
+            console.log(stelle);
+            // let div = document.getElementById("element");
+            let container = document.getElementById("container");
+            let teile = element.split(":");
+            if (teile[2] == "frei") {
+              div.style.backgroundColor = "green";
+              if (data != "nicht möglich") {
+                let button = document.createElement("button");
+                button.textContent = "Termin buchen";
+                button.onclick = function () {
+                  bucheTermin(teile[0], teile[1]);
+                };
+                div.appendChild(button);
+              } else {
                 let teile = element.split(":");
                 let stelle1 = zeitenArray.indexOf(element);
+                console.log(stelle);
+                console.log(stelle1);
+                console.log(teile);
                 if (teile[2] == "belegt" && stelle == stelle1) {
+                  console.log("ddd");
                   löschbar(stelle, zeitenArray);
                 }
               }
+            } else {
+              let teile = element.split(":");
+              let stelle1 = zeitenArray.indexOf(element);
+              console.log(stelle);
+              console.log(stelle1);
+              console.log(teile);
+              if (teile[2] == "belegt" && stelle == stelle1) {
+                console.log("ddd");
+                löschbar(stelle, zeitenArray, `${teile[0]}:${teile[1]}`);
+              }
             }
+
+            /*if (data == "nicht möglich") {
+              for (let element of zeitenArray) {
+              }
+            }*/
           })
           .catch((error) => console.error("Fehler:", error));
       }
 
-      function löschbar(stelle, zeitenArray) {
+      function löschbar(stelle, zeitenArray, uhrzeit) {
         let name = localStorage.getItem("name");
         let lehrer =
           localStorage.getItem("lehrer").split(" ")[0] +
@@ -144,7 +165,7 @@
         let formData = new URLSearchParams();
         formData.append("name", name);
         formData.append("lehrername", lehrer);
-        formData.append("stelle", stelle);
+        formData.append("uhrzeit", uhrzeit);
         fetch("http://localhost:8080/api/loeschenmoeglich", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -153,11 +174,15 @@
           .then((response) => response.text())
           .then((data) => {
             console.log(data);
+            console.log("stelle:" + stelle);
+            console.log("name:" + name);
+            console.log("lehrer:" + lehrer);
+            console.log("lehrer:" + uhrzeit);
             if (data == "löschbar") {
               let button = document.createElement("button");
               button.textContent = "Termin löschen";
               button.onclick = function () {
-                löscheTermin(stelle);
+                löscheTermin(stelle, uhrzeit);
               };
               document.getElementById(zeitenArray[stelle]).appendChild(button);
             }
@@ -165,7 +190,7 @@
           .catch((error) => console.error("Fehler:", error));
       }
 
-      function löscheTermin(stelle) {
+      function löscheTermin(stelle, uhrzeit) {
         let formData = new URLSearchParams();
         let name = localStorage.getItem("name");
         let lehrer =
@@ -174,7 +199,7 @@
           localStorage.getItem("lehrer").split(" ")[1];
         formData.append("name", name);
         formData.append("lehrername", lehrer);
-        formData.append("stelle", stelle);
+        formData.append("uhrzeit", uhrzeit);
         fetch("http://localhost:8080/api/loeschen", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },

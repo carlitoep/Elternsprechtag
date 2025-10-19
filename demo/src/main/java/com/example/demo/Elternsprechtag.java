@@ -15,16 +15,33 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
+
+import com.example.demo.entity.Termin;
+import com.example.demo.repository.TerminRepository;
+
 import java.util.Arrays;
+import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
+
+import java.time.LocalTime;
+import jakarta.annotation.PostConstruct;
 
 @SpringBootApplication
 @RestController
 @RequestMapping("/api")
 
 public class Elternsprechtag {
+
+    private final TerminRepository terminRepository;
+
+    public Elternsprechtag(TerminRepository terminRepository) {
+        this.terminRepository = terminRepository;
+    }
 
     static final int LEHRERANZAHL = 5;
     static final int DAUER = 120;
@@ -115,78 +132,161 @@ public class Elternsprechtag {
         SpringApplication.run(Elternsprechtag.class, args);
     }
 
-    public Elternsprechtag() {
+    @PostConstruct
+    public void init() {
+        terminRepository.deleteAll();
 
-        List<String> langnamen = new ArrayList<>();
-        langnamen = leseSpalte(1, decodedPath2);
+        /*
+         * List<String> langnamen = new ArrayList<>();
+         * langnamen = leseSpalte(1, decodedPath2);
+         * 
+         * // Initialisiere die Lehrerzeiten
+         * for (int i = 0; i < langnamen.size(); i++) {
+         * String[] zeiten = new String[DAUER / ABSCHNITTE];
+         * for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
+         * zeiten[j] = "frei";
+         * }
+         * lehrerzeiten.put(langnamen.get(i), new ArrayList<>(Arrays.asList(zeiten)));
+         * startzeiten.put(langnamen.get(i), new int[] { START, 0 });
+         * }
+         */
+        List<Termin> vorhandeneTermine = terminRepository.findAll();
 
-        // Initialisiere die Lehrerzeiten
-        for (int i = 0; i < langnamen.size(); i++) {
-            String[] zeiten = new String[DAUER / ABSCHNITTE];
-            for (int j = 0; j < DAUER / ABSCHNITTE; j++) {
-                zeiten[j] = "frei";
+        if (vorhandeneTermine.isEmpty()) {
+            System.out.println("Tabelle ist leer — Termine werden neu angelegt...");
+
+            List<String> alleLehrer = leseSpalte(1, decodedPath2); // Lehrer-Namen aus Excel
+
+            for (String lehrer : alleLehrer) {
+                int anfangS = START;
+                int anfangM = 0;
+                int endeS = START + DAUER / 60;
+                int endeM = 0;
+
+                int gesamtDauer = (endeS * 60 + endeM) - (anfangS * 60 + anfangM);
+                int slots = gesamtDauer / ABSCHNITTE;
+
+                for (int i = 0; i < slots; i++) {
+                    int minuten = anfangS * 60 + anfangM + i * ABSCHNITTE;
+                    int stunde = minuten / 60;
+                    int minute = minuten % 60;
+
+                    String uhrzeit = String.format("%02d:%02d", stunde, minute);
+
+                    Termin termin = new Termin();
+                    termin.setLehrername(lehrer);
+                    termin.setUhrzeit(uhrzeit);
+                    termin.setSchuelername(null); // frei
+                    terminRepository.save(termin);
+                }
             }
-            lehrerzeiten.put(langnamen.get(i), new ArrayList<>(Arrays.asList(zeiten)));
-            startzeiten.put(langnamen.get(i), new int[] { START, 0 });
+
+            System.out.println("Termine wurden erfolgreich initial eingetragen.");
+        } else {
+            System.out.println("Termine existieren bereits — es wird nichts neu angelegt.");
         }
+
     }
 
     @PostMapping("/zeiten")
     public List<String> freieZeiten(@RequestParam String lehrername) {
-        List<String> freieZeiten = new ArrayList<>();
 
-        int anfangS = startzeiten.get(lehrername)[0];
-        int anfangM = startzeiten.get(lehrername)[1];
+        /*
+         * List<String> freieZeiten = new ArrayList<>();
+         * 
+         * int anfangS = startzeiten.get(lehrername)[0];
+         * int anfangM = startzeiten.get(lehrername)[1];
+         * 
+         * if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) ==
+         * null) {
+         * return List.of("Fehler: Lehrer nicht gefunden");
+         * }
+         * 
+         * for (int k = 0; k < lehrerzeiten.get(lehrername).size(); k++) {
+         * if (lehrerzeiten.get(lehrername).get(k).equals("frei")) {
+         * // keineZeit = false;
+         * freieZeiten.add(((((k + anfangM) * ABSCHNITTE) + anfangS * 60) / 60) + ":"
+         * + (df.format((((k + anfangM) * ABSCHNITTE) + anfangS * 60) % 60)) + ":frei");
+         * } else {
+         * freieZeiten.add(((((k + anfangM) * ABSCHNITTE) + anfangS * 60) / 60) + ":"
+         * + (df.format((((k + anfangM) * ABSCHNITTE) + anfangS * 60) % 60)) +
+         * ":belegt");
+         * }
+         * }
+         * 
+         * return freieZeiten;
+         */
+        List<Termin> termine = terminRepository.findByLehrername(lehrername);
 
-        if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) == null) {
+        if (termine.isEmpty()) {
             return List.of("Fehler: Lehrer nicht gefunden");
         }
 
-        for (int k = 0; k < lehrerzeiten.get(lehrername).size(); k++) {
-            if (lehrerzeiten.get(lehrername).get(k).equals("frei")) {
-                // keineZeit = false;
-                freieZeiten.add(((((k + anfangM) * ABSCHNITTE) + anfangS * 60) / 60) + ":"
-                        + (df.format((((k + anfangM) * ABSCHNITTE) + anfangS * 60) % 60)) + ":frei");
-            } else {
-                freieZeiten.add(((((k + anfangM) * ABSCHNITTE) + anfangS * 60) / 60) + ":"
-                        + (df.format((((k + anfangM) * ABSCHNITTE) + anfangS * 60) % 60)) + ":belegt");
-            }
+        List<String> freieZeiten = new ArrayList<>();
+        for (Termin t : termine) {
+            String status = (t.getSchuelername() == null) ? "frei" : "belegt";
+            freieZeiten.add(t.getUhrzeit() + ":" + status);
         }
 
         return freieZeiten;
+
     }
 
     @PostMapping("/buchen")
     public String bucheTermin(@RequestParam String name, @RequestParam String lehrername, @RequestParam String urzeit) {
-        String[] urzeitArray = urzeit.split(":");
-        String[] zeitenNeu = new String[lehrerzeiten.get(lehrername).size()];
-        int anfangS = startzeiten.get(lehrername)[0];
-        int anfangM = startzeiten.get(lehrername)[1];
+        /*
+         * String[] urzeitArray = urzeit.split(":");
+         * String[] zeitenNeu = new String[lehrerzeiten.get(lehrername).size()];
+         * int anfangS = startzeiten.get(lehrername)[0];
+         * int anfangM = startzeiten.get(lehrername)[1];
+         * 
+         * for (int j = 0; j < lehrerzeiten.get(lehrername).size(); j++) {
+         * zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
+         * }
+         * 
+         * int index = ((Integer.parseInt(urzeitArray[0]) * 60 +
+         * Integer.parseInt(urzeitArray[1])) - anfangS * 60
+         * + anfangM)
+         * / ABSCHNITTE;
+         * 
+         * if (lehrerzeiten.get(lehrername).contains(name))
+         * return "Du hast schon einen Termin bei diesem Lehrer";
+         * if (zeitenNeu[index].equals("frei")) {
+         * zeitenNeu[index] = name;
+         * lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeitenNeu)));
+         * return "Termin für " + name + " bei " + lehrername + " um " + urzeit +
+         * " wurde erfolgreich gebucht.";
+         * } else {
+         * return "Dieser Termin ist bereits vergeben.";
+         * }
+         */
 
-        for (int j = 0; j < lehrerzeiten.get(lehrername).size(); j++) {
-            zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
+        // LocalTime zeit = LocalTime.parse(urzeit);
+
+        Optional<Termin> optionalTermin = terminRepository.findByLehrernameAndUhrzeit(lehrername, urzeit);
+
+        if (optionalTermin.isEmpty()) {
+            return "Fehler: Termin nicht gefunden.";
         }
 
-        int index = ((Integer.parseInt(urzeitArray[0]) * 60 + Integer.parseInt(urzeitArray[1])) - anfangS * 60
-                + anfangM)
-                / ABSCHNITTE;
+        Termin termin = optionalTermin.get();
 
-        if (lehrerzeiten.get(lehrername).contains(name))
-            return "Du hast schon einen Termin bei diesem Lehrer";
-        if (zeitenNeu[index].equals("frei")) {
-            zeitenNeu[index] = name;
-            lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeitenNeu)));
-            return "Termin für " + name + " bei " + lehrername + " um " + urzeit + " wurde erfolgreich gebucht.";
-        } else {
+        // Prüfen, ob der Termin schon vergeben ist
+        if (termin.getSchuelername() != null) {
             return "Dieser Termin ist bereits vergeben.";
         }
 
+        // Termin updaten
+        termin.setSchuelername(name);
+        terminRepository.save(termin);
+
+        return "Termin gebucht!";
     }
 
     @PostMapping("/buchenMoeglich")
     public String buchenMoeglich(@RequestParam String name, @RequestParam String lehrername) {
 
-        if (lehrerzeiten.get(lehrername).contains(name)) {
+        if (terminRepository.existsByLehrernameAndSchuelername(lehrername, name)) {
             return "nicht möglich";
         } else {
             return "möglich";
@@ -197,15 +297,28 @@ public class Elternsprechtag {
     @PostMapping("/lehrer")
     public List<String> lehrerTermine(@RequestParam String lehrername) {
         lehrername = capitalizeFirstLetter(lehrername);
-        int anfangS = startzeiten.get(lehrername)[0];
-        int anfangM = startzeiten.get(lehrername)[1];
-        List<String> lehrerTermine = new ArrayList<>();
-        for (int i = 0; i < lehrerzeiten.get(lehrername).size(); i++) {
-            lehrerTermine.add(((((i + anfangM) * ABSCHNITTE) + anfangS * 60) / 60) + ":"
-                    + (df.format((((i + anfangM) * ABSCHNITTE) + anfangS * 60) % 60)) + ":"
-                    + lehrerzeiten.get(lehrername).get(i));
+        /*
+         * int anfangS = startzeiten.get(lehrername)[0];
+         * int anfangM = startzeiten.get(lehrername)[1];
+         * List<String> lehrerTermine = new ArrayList<>();
+         * for (int i = 0; i < lehrerzeiten.get(lehrername).size(); i++) {
+         * lehrerTermine.add(((((i + anfangM) * ABSCHNITTE) + anfangS * 60) / 60) + ":"
+         * + (df.format((((i + anfangM) * ABSCHNITTE) + anfangS * 60) % 60)) + ":"
+         * + lehrerzeiten.get(lehrername).get(i));
+         * }
+         * return lehrerTermine;
+         */
+
+        List<Termin> termine = terminRepository.findByLehrernameOrderByUhrzeitAsc(lehrername);
+
+        List<String> result = new ArrayList<>();
+
+        for (Termin termin : termine) {
+            String status = (termin.getSchuelername() == null) ? "frei" : termin.getSchuelername();
+            result.add(termin.getUhrzeit() + ":" + status);
         }
-        return lehrerTermine;
+
+        return result;
     }
 
     @PostMapping("/schueler")
@@ -217,29 +330,54 @@ public class Elternsprechtag {
 
     @PostMapping("/loeschen")
     public String loescheTermin(@RequestParam String name, @RequestParam String lehrername,
-            @RequestParam int stelle) {
-        String[] zeitenNeu = new String[lehrerzeiten.get(lehrername).size()];
-        for (int j = 0; j < lehrerzeiten.get(lehrername).size(); j++) {
-            zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
-        }
-        if (name.equals(zeitenNeu[stelle])) {
-            zeitenNeu[stelle] = "frei";
-            lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeitenNeu)));
+            @RequestParam String uhrzeit) {
 
-            return "Dein Termin wurde gelöscht";
-        } else {
+        // Uhrzeit anhand der Stelle berechnen
+        /*
+         * String uhrzeit;
+         * if (stelle <= 6) {
+         * uhrzeit = String.format("%02d:%02d", START, stelle * 10);
+         * } else {
+         * uhrzeit = String.format("%02d:%02d", START + 1, (stelle - 6) * 10);
+         * }
+         */
+
+        // Termin suchen
+        Termin termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name, uhrzeit);
+
+        if (termin == null) {
             return "Diesen Termin hast du nicht gebucht";
         }
+
+        // Schüler auf null setzen (Slot freigeben)
+        termin.setSchuelername(null);
+        terminRepository.save(termin);
+
+        return "Dein Termin wurde gelöscht";
     }
 
     @PostMapping("/loeschenmoeglich")
     public String loeschenmoeglich(@RequestParam String name, @RequestParam String lehrername,
-            @RequestParam int stelle) {
-        String[] zeitenNeu = new String[lehrerzeiten.get(lehrername).size()];
-        for (int j = 0; j < lehrerzeiten.get(lehrername).size(); j++) {
-            zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
-        }
-        if (name.equals(zeitenNeu[stelle])) {
+            @RequestParam String uhrzeit) {
+        /*
+         * String[] zeitenNeu = new String[lehrerzeiten.get(lehrername).size()];
+         * for (int j = 0; j < lehrerzeiten.get(lehrername).size(); j++) {
+         * zeitenNeu[j] = lehrerzeiten.get(lehrername).get(j);
+         * }
+         */
+        /*
+         * String uhrzeit = "";
+         * if (stelle <= 6) {
+         * uhrzeit = String.format("%02d:%02d", START, stelle * 10);
+         * } else {
+         * uhrzeit = String.format("%02d:%02d", START + 1, stelle * 10);
+         * }
+         */
+
+        System.out.println(uhrzeit);
+        boolean existiert = terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername, name, uhrzeit);
+
+        if (existiert) {
 
             return "löschbar";
         } else {
@@ -266,26 +404,65 @@ public class Elternsprechtag {
     }
 
     @PostMapping("/zeitenAendern")
+    @Transactional
     public List<String> zeitenAendern(@RequestParam String lehrername, @RequestParam Integer anfangS,
             @RequestParam Integer anfangM,
             @RequestParam Integer endeS, @RequestParam Integer endeM) {
+        /*
+         * List<String> neueZeiten = new ArrayList<>();
+         * 
+         * if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) ==
+         * null) {
+         * return List.of("Fehler: Lehrer nicht gefunden");
+         * }
+         * Integer neueDauer = (endeS * 60 + endeM) - (anfangS * 60 + anfangM);
+         * 
+         * String[] zeiten = new String[neueDauer / ABSCHNITTE];
+         * 
+         * for (int j = 0; j < neueDauer / ABSCHNITTE; j++) {
+         * zeiten[j] = "frei";
+         * }
+         * lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeiten)));
+         * 
+         * for (int i = 0; i < zeiten.length; i++) {
+         * neueZeiten.add((((i * ABSCHNITTE) + anfangS * 60) / 60) + ":"
+         * + (df.format((((i + anfangM / 10) * ABSCHNITTE) + anfangS * 60) % 60)) +
+         * ":frei");
+         * }
+         * 
+         * return neueZeiten;
+         * }
+         */
+
+        System.out.println("Lehrer: " + lehrername);
+        System.out.println("anfangS=" + anfangS);
+        System.out.println("anfangM=" + anfangM);
+        System.out.println("endeS=" + endeS);
+        System.out.println("endeM=" + endeM);
+        // return "OK";
         List<String> neueZeiten = new ArrayList<>();
 
-        if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) == null) {
-            return List.of("Fehler: Lehrer nicht gefunden");
-        }
-        Integer neueDauer = (endeS * 60 + endeM) - (anfangS * 60 + anfangM);
+        // 🧹 1. Alle alten Termine dieses Lehrers löschen
+        terminRepository.deleteByLehrername(lehrername);
 
-        String[] zeiten = new String[neueDauer / ABSCHNITTE];
+        // 🕓 2. Neue Zeitfenster berechnen
+        int gesamtDauer = (endeS * 60 + endeM) - (anfangS * 60 + anfangM);
+        int slots = gesamtDauer / ABSCHNITTE;
 
-        for (int j = 0; j < neueDauer / ABSCHNITTE; j++) {
-            zeiten[j] = "frei";
-        }
-        lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeiten)));
+        for (int i = 0; i < slots; i++) {
+            int minuten = anfangS * 60 + anfangM + i * ABSCHNITTE;
+            int stunde = minuten / 60;
+            int minute = minuten % 60;
 
-        for (int i = 0; i < zeiten.length; i++) {
-            neueZeiten.add((((i * ABSCHNITTE) + anfangS * 60) / 60) + ":"
-                    + (df.format((((i + anfangM / 10) * ABSCHNITTE) + anfangS * 60) % 60)) + ":frei");
+            String uhrzeit = String.format("%02d:%02d", stunde, minute);
+            neueZeiten.add(uhrzeit + ":frei");
+
+            // 📝 3. Freie Termine als "Platzhalter" in DB speichern
+            Termin termin = new Termin();
+            termin.setLehrername(lehrername);
+            termin.setUhrzeit(uhrzeit);
+            termin.setSchuelername(null); // noch frei
+            terminRepository.save(termin);
         }
 
         return neueZeiten;

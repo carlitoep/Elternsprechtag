@@ -55,7 +55,10 @@
       function zeitÄndern() {
         let anfang = document.getElementById("anfang").value;
         let ende = document.getElementById("ende").value;
-
+        console.log(anfang);
+        console.log(ende);
+        console.log(anfang.split(":"));
+        console.log(ende.split(":"));
         let formData = new URLSearchParams();
         formData.append("lehrername", lehrerName);
         formData.append("anfangS", anfang.split(":")[0]);
@@ -90,6 +93,29 @@
             }
           });
       }
+
+      function vorbuchen() {
+        let name = document.getElementById("name").value;
+        let uhrzeit = document.getElementById("uhrzeit").value;
+
+        let formData = new URLSearchParams();
+        formData.append("name", name);
+        formData.append("lehrername", lehrerName);
+        formData.append("urzeit", uhrzeit);
+
+        fetch("http://localhost:8080/api/buchen", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data);
+            alert(data); // Antwort vom Server anzeigen
+            window.location.href = "lehrerZeiten.html";
+          })
+          .catch((error) => console.error("Fehler:", error));
+      }
     </script>
   </head>
   <body>
@@ -99,6 +125,10 @@
       <input type="text" id="anfang" placeholder="Anfangszeit(XX:XX)" />
       <input type="text" id="ende" placeholder="Endzeit(XX:XX)" />
       <button onclick="zeitÄndern()">Zeiten ändern</button>
+      <label for="Termin">Zeiten vorbuchen</label>
+      <input type="text" id="name" placeholder="Vorname, Nachname" />
+      <input type="text" id="uhrzeit" placeholder="Zeit(XX:XX)" />
+      <button onclick="vorbuchen()">vorbuchen</button>
     </div>
   </body>
 </html>
