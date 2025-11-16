@@ -36,9 +36,11 @@
           .then((data) => {
             let array = JSON.parse(data);
             for (let element of array) {
+              let stelle = array.indexOf(element);
               let p = document.createElement("p");
               let div = document.createElement("div");
               div.classList.add("termin-box2");
+              div.id = element;
               p.innerText = element;
               let container = document.getElementById("container");
               container.appendChild(div);
@@ -46,6 +48,8 @@
               let teile = element.split(":");
               if (teile[2] == "frei") {
                 div.style.backgroundColor = "green";
+              } else {
+                löschbar(stelle, array, `${teile[0]}:${teile[1]}`, teile[2]);
               }
             }
           })
@@ -79,9 +83,11 @@
               .forEach((element) => element.remove());
             let array = JSON.parse(data);
             for (let element of array) {
+              let stelle = array.indexOf(element);
               let p = document.createElement("p");
               let div = document.createElement("div");
               div.classList.add("termin-box2");
+              div.id = element;
               p.innerText = element;
               let container = document.getElementById("container");
               container.appendChild(div);
@@ -89,8 +95,12 @@
               let teile = element.split(":");
               if (teile[2] == "frei") {
                 div.style.backgroundColor = "green";
+              } else {
+                console.log(teile[2]);
+                löschbar(stelle, array, `${teile[0]}:${teile[1]}`, teile[2]);
               }
             }
+            window.location.href = "lehrerZeiten.html";
           });
       }
 
@@ -112,6 +122,61 @@
           .then((data) => {
             console.log(data);
             alert(data); // Antwort vom Server anzeigen
+            window.location.href = "lehrerZeiten.html";
+          })
+          .catch((error) => console.error("Fehler:", error));
+      }
+
+      function löschbar(stelle, zeitenArray, uhrzeit, name) {
+        let lehrer =
+          localStorage.getItem("lehrer").split(" ")[0] +
+          " " +
+          localStorage.getItem("lehrer").split(" ")[1];
+        let formData = new URLSearchParams();
+        formData.append("name", name);
+        formData.append("lehrername", lehrer);
+        formData.append("uhrzeit", uhrzeit);
+        fetch("http://localhost:8080/api/loeschenmoeglich", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data);
+            console.log("stelle:" + stelle);
+            console.log("name:" + name);
+            console.log("lehrer:" + lehrer);
+            console.log("lehrer:" + uhrzeit);
+            if (data == "löschbar") {
+              let button = document.createElement("button");
+              button.textContent = "Termin löschen";
+              button.onclick = function () {
+                löscheTermin(stelle, uhrzeit, name);
+              };
+              document.getElementById(zeitenArray[stelle]).appendChild(button);
+            }
+          })
+          .catch((error) => console.error("Fehler:", error));
+      }
+
+      function löscheTermin(stelle, uhrzeit, name) {
+        let formData = new URLSearchParams();
+        let lehrer =
+          localStorage.getItem("lehrer").split(" ")[0] +
+          " " +
+          localStorage.getItem("lehrer").split(" ")[1];
+        formData.append("name", name);
+        formData.append("lehrername", lehrer);
+        formData.append("uhrzeit", uhrzeit);
+        fetch("http://localhost:8080/api/loeschen", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            alert(data);
             window.location.href = "lehrerZeiten.html";
           })
           .catch((error) => console.error("Fehler:", error));

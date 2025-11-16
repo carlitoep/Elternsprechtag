@@ -82,7 +82,7 @@
       }
 
       function überprüfung(){
-        let formData = new URLSearchParams();
+       /* let formData = new URLSearchParams();
         let name = document.getElementById("name").value;
         let geburtsdatum = document.getElementById("geburtsdatum").value;
         let straße = document.getElementById("straße").value;
@@ -104,8 +104,31 @@
               return
             }
           })
+          .catch((error) => console.error("Fehler:", error));*/
+         let formData = new URLSearchParams();
+        let name = document.getElementById("name").value;
+        let email = document.getElementById("email").value;
+        
+        formData.append("schuelername", name);
+        formData.append("email", email);
+        fetch("http://localhost:8080/api/berechtigt", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data)
+            if(data=="true"){
+              getLehrer()
+            } else {
+              alert("Bitte bestätige deine Email über den gesendeten Link")
+              return
+            }
+          })
           .catch((error) => console.error("Fehler:", error));
       }
+      
     </script>
   </head>
   <body>
@@ -115,10 +138,9 @@
     <label for="name">Name des Kindes:</label>
     <input type="text" id="name" name="name" placeholder="Nachname, Vorname" required /><br /><br />
     <h3 >Sicherheitsabfrage</h3>
-    <label for="geburtsdatum">Geburtsdatum des Kindes:</label>
-    <input type="text" id="geburtsdatum" placeholder="dd.mm.yyyy" name="geburtsdatum" required /><br /><br />
-    <label for="straße">ersten 4 Zeichen deiner Straße:</label>
-    <input type="text" id="straße" name="straße" required /><br /><br />
+      <label for="email">email</label>
+    <input type="text" id="email" name="email" required /><br /><br />
+ 
     <div id="lehrerdiv">
     <br /><br />
   </div>

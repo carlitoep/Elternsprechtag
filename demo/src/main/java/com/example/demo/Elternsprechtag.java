@@ -16,13 +16,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.Termin;
+import com.example.demo.entity.Verifizierung;
 import com.example.demo.repository.TerminRepository;
+import com.example.demo.repository.mailRepository;
 
 import java.util.Arrays;
 import jakarta.persistence.*;
@@ -36,8 +40,13 @@ import jakarta.annotation.PostConstruct;
 @RequestMapping("/api")
 
 public class Elternsprechtag {
-
+    @Autowired
+    private mailRepository mailRepository;
+    @Autowired
     private final TerminRepository terminRepository;
+
+    @Autowired
+    private MailService mailService;
 
     public Elternsprechtag(TerminRepository terminRepository) {
         this.terminRepository = terminRepository;
@@ -393,76 +402,116 @@ public class Elternsprechtag {
     }
 
     @PostMapping("/berechtigt")
-    public boolean berechtigt(@RequestParam String schuelername, @RequestParam String geburtsdatum,
-            @RequestParam String straße) {
-        schuelername = capitalizeFirstLetter(schuelername);
-        int index = leseSpalte(0, decodedPath3).indexOf(schuelername);
-        String geburtsdatumString = leseZelle(index, 1, decodedPath3);
-        String straßenName = leseZelle(index, 2, decodedPath3);
-        return geburtsdatumString.equals(geburtsdatum) && straße.length() >= 4
-                && straßenName.toLowerCase().startsWith(straße.toLowerCase());
+    public boolean berechtigt(@RequestParam String schuelername, @RequestParam String email) {
+        /*
+         * schuelername = capitalizeFirstLetter(schuelername);
+         * int index = leseSpalte(0, decodedPath3).indexOf(schuelername);
+         * String geburtsdatumString = leseZelle(index, 1, decodedPath3);
+         * String straßenName = leseZelle(index, 2, decodedPath3);
+         * return geburtsdatumString.equals(geburtsdatum) && straße.length() >= 4
+         * && straßenName.toLowerCase().startsWith(straße.toLowerCase());
+         */
+        // Prüfen, ob Email bereits verifiziert
+        Verifizierung verif = mailRepository.findByEmail(email);
+
+        System.out.println("✅ /berechtigt wurde aufgerufen mit: " + email);
+
+        if (verif == null || !verif.getBestaetigt()) {
+            // Noch keine Verifizierung -> neu anlegen + Mail senden
+            System.out.println("✅ Neuer Eintrag -> Mail wird gesendet");
+            String token = UUID.randomUUID().toString();
+
+            Verifizierung neu = new Verifizierung();
+            neu.setEmail(email);
+            neu.setToken(token);
+            neu.setBestaetigt(false);
+            mailRepository.save(neu);
+
+            System.out.println("✅ Aufruf von mailService.sendVerificationEmail()");
+            mailService.sendVerificationEmail(email, token);
+
+            return false; // Frontend sagt dann: Geh zur E-Mail und klick auf den Link
+        }
+
+        /*
+         * if (!verif.getBestaetigt()) {
+         * return false;
+         * }
+         */
+
+        return true;
+
+    }
+
+    @GetMapping("/verify")
+    public String verify(@RequestParam String token) {
+        Verifizierung verif = mailRepository.findByToken(token);
+
+        if (verif == null)
+            return "Ungültiger Link";
+
+        verif.setBestaetigt(true);
+        mailRepository.save(verif);
+
+        return "E-Mail bestätigt!";
     }
 
     @PostMapping("/zeitenAendern")
     @Transactional
-    public List<String> zeitenAendern(@RequestParam String lehrername, @RequestParam Integer anfangS,
-            @RequestParam Integer anfangM,
-            @RequestParam Integer endeS, @RequestParam Integer endeM) {
-        /*
-         * List<String> neueZeiten = new ArrayList<>();
-         * 
-         * if (!lehrerzeiten.containsKey(lehrername) || lehrerzeiten.get(lehrername) ==
-         * null) {
-         * return List.of("Fehler: Lehrer nicht gefunden");
-         * }
-         * Integer neueDauer = (endeS * 60 + endeM) - (anfangS * 60 + anfangM);
-         * 
-         * String[] zeiten = new String[neueDauer / ABSCHNITTE];
-         * 
-         * for (int j = 0; j < neueDauer / ABSCHNITTE; j++) {
-         * zeiten[j] = "frei";
-         * }
-         * lehrerzeiten.put(lehrername, new ArrayList<>(Arrays.asList(zeiten)));
-         * 
-         * for (int i = 0; i < zeiten.length; i++) {
-         * neueZeiten.add((((i * ABSCHNITTE) + anfangS * 60) / 60) + ":"
-         * + (df.format((((i + anfangM / 10) * ABSCHNITTE) + anfangS * 60) % 60)) +
-         * ":frei");
-         * }
-         * 
-         * return neueZeiten;
-         * }
-         */
+    public List<String> zeitenAendern(
+            @RequestParam String lehrername,
+            @RequestParam int anfangS,
+            @RequestParam int anfangM,
+            @RequestParam int endeS,
+            @RequestParam int endeM) {
 
         System.out.println("Lehrer: " + lehrername);
         System.out.println("anfangS=" + anfangS);
         System.out.println("anfangM=" + anfangM);
         System.out.println("endeS=" + endeS);
         System.out.println("endeM=" + endeM);
-        // return "OK";
+
         List<String> neueZeiten = new ArrayList<>();
 
-        // 🧹 1. Alle alten Termine dieses Lehrers löschen
-        terminRepository.deleteByLehrername(lehrername);
-
-        // 🕓 2. Neue Zeitfenster berechnen
-        int gesamtDauer = (endeS * 60 + endeM) - (anfangS * 60 + anfangM);
+        int neuerStart = anfangS * 60 + anfangM;
+        int neuesEnde = endeS * 60 + endeM;
+        int gesamtDauer = neuesEnde - neuerStart;
         int slots = gesamtDauer / ABSCHNITTE;
 
+        // 1️⃣ Vorhandene Termine laden
+        List<Termin> vorhandene = terminRepository.findByLehrername(lehrername);
+
+        // 2️⃣ Termine außerhalb des neuen Zeitraums löschen
+        for (Termin t : vorhandene) {
+            String[] hm = t.getUhrzeit().split(":");
+            int min = Integer.parseInt(hm[0]) * 60 + Integer.parseInt(hm[1]);
+
+            if (min < neuerStart || min >= neuesEnde) {
+                terminRepository.delete(t);
+            }
+        }
+
+        // 3️⃣ Neue Zeitfenster durchgehen
         for (int i = 0; i < slots; i++) {
-            int minuten = anfangS * 60 + anfangM + i * ABSCHNITTE;
+            int minuten = neuerStart + i * ABSCHNITTE;
             int stunde = minuten / 60;
             int minute = minuten % 60;
 
             String uhrzeit = String.format("%02d:%02d", stunde, minute);
-            neueZeiten.add(uhrzeit + ":frei");
+            neueZeiten.add(uhrzeit);
 
-            // 📝 3. Freie Termine als "Platzhalter" in DB speichern
-            Termin termin = new Termin();
-            termin.setLehrername(lehrername);
-            termin.setUhrzeit(uhrzeit);
-            termin.setSchuelername(null); // noch frei
-            terminRepository.save(termin);
+            // Prüfen, ob dieser Slot schon existiert
+            boolean existiert = vorhandene.stream()
+                    .anyMatch(t -> t.getUhrzeit().equals(uhrzeit));
+
+            // Wenn er nicht existiert, hinzufügen
+            if (!existiert) {
+                Termin neu = new Termin();
+                neu.setLehrername(lehrername);
+                neu.setUhrzeit(uhrzeit);
+                neu.setSchuelername(null); // frei
+                terminRepository.save(neu);
+            }
         }
 
         return neueZeiten;

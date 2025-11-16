@@ -29,3 +29,4 @@ public interface TerminRepository extends JpaRepository<Termin, Long> {
 
     List<Termin> findByLehrernameOrderByUhrzeitAsc(String lehrername);
 }
+
