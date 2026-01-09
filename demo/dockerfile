@@ -1,0 +1,17 @@
+# Start mit offiziellem Java OpenJDK
+FROM openjdk:17-jdk-slim
+
+# Arbeitsverzeichnis
+WORKDIR /app
+
+# Gradle Wrapper und Projekt kopieren
+COPY . .
+
+# Build
+RUN ./gradlew build
+
+# Port setzen (z. B. 8080)
+EXPOSE 8080
+
+# Startbefehl
+CMD ["java", "-jar", "build/libs/demo-0.0.1-SNAPSHOT.jar"]
