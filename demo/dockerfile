@@ -1,16 +1,15 @@
-# Start mit offiziellem Java OpenJDK
-FROM openjdk:17-jdk-slim
+# Offizielles Java 17 Image
+FROM eclipse-temurin:17-jdk
 
-# Arbeitsverzeichnis
 WORKDIR /app
 
-# Gradle Wrapper und Projekt kopieren
+# Gradle Wrapper & Projekt kopieren
 COPY . .
 
 # Build
-RUN ./gradlew build
+RUN ./gradlew build --no-daemon
 
-# Port setzen (z. B. 8080)
+# Port freigeben
 EXPOSE 8080
 
 # Startbefehl
