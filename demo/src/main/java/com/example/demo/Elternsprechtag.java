@@ -143,7 +143,7 @@ public class Elternsprechtag {
 
     @PostConstruct
     public void init() {
-        terminRepository.deleteAll();
+       
 
         /*
          * List<String> langnamen = new ArrayList<>();
