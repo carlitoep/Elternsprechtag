@@ -1,38 +1,22 @@
 # ======== Stage 1: Build ========
-# Nutze ein offizielles Gradle + JDK Image für den Build
-FROM gradle:8.1.1-jdk17 AS builder
+FROM gradle:8.1.1-jdk21 AS builder
 
-# Arbeitsverzeichnis im Container
 WORKDIR /home/gradle/project
 
-# Kopiere Gradle Wrapper und Build Files
 COPY build.gradle settings.gradle gradlew ./
 COPY gradle ./gradle
-
-# Kopiere den Quellcode
 COPY src ./src
 
-# Builden der JAR (Tests werden übersprungen)
 RUN ./gradlew build -x test
 
 # ======== Stage 2: Run ========
-# Leichtes OpenJDK-Image für den Betrieb
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:21-jdk-jammy
 
-# Arbeitsverzeichnis
 WORKDIR /app
 
-# Kopiere die gebaute JAR aus der Builder Stage
+# Spring Boot JAR vom Build kopieren
 COPY --from=builder /home/gradle/project/build/libs/demo-0.0.1-SNAPSHOT.jar ./demo.jar
 
-# Setze Umgebungsvariablen, die du auf Render auch nutzt
-# z.B. Datenbankzugang, Spring Profiles etc.
-# ENV SPRING_DATASOURCE_URL=jdbc:mysql://...
-# ENV SPRING_DATASOURCE_USERNAME=root
-# ENV SPRING_DATASOURCE_PASSWORD=passwort
-
-# Spring Boot Port
 EXPOSE 8080
 
-# Startbefehl
 ENTRYPOINT ["java","-jar","demo.jar"]
