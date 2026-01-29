@@ -31,7 +31,7 @@
         let keinSchueler = false
         let formData = new URLSearchParams();
         formData.append("schuelername", name);
-        fetch("http://localhost:8080/api/schueler", {
+        fetch("https://elternsprechtag-1.onrender.com/api/schueler", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData,
@@ -111,7 +111,7 @@
         
         formData.append("schuelername", name);
         formData.append("email", email);
-        fetch("http://localhost:8080/api/berechtigt", {
+        fetch("https://elternsprechtag-1.onrender.com/api/berechtigt", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData,
