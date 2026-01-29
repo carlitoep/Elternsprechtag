@@ -38,6 +38,7 @@ import jakarta.annotation.PostConstruct;
 @SpringBootApplication
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 
 public class Elternsprechtag {
     @Autowired
