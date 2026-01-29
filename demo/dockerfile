@@ -1,27 +1,33 @@
 # ======== Stage 1: Build ========
-FROM gradle:8.2-jdk21 AS builder
+# Verwende JDK 21 für Build, Wrapper lädt Gradle selbst
+FROM eclipse-temurin:21-jdk-jammy AS builder
 
-WORKDIR /home/gradle/project
+# Arbeitsverzeichnis
+WORKDIR /home/project
 
-# Projektdateien kopieren
-COPY build.gradle settings.gradle gradlew ./
+# Gradle Wrapper + Projektdateien kopieren
+COPY gradlew .
 COPY gradle ./gradle
+COPY build.gradle settings.gradle ./
 COPY src ./src
 
-# Gradle Wrapper ausführbar machen
+# Wrapper ausführbar machen
 RUN chmod +x ./gradlew
 
-# Builden (Tests überspringen)
+# Projekt bauen (Tests überspringen)
 RUN ./gradlew build -x test
 
 # ======== Stage 2: Run ========
+# Leichtes JDK 21 Runtime Image
 FROM eclipse-temurin:21-jdk-jammy
 
 WORKDIR /app
 
 # Spring Boot JAR vom Build kopieren
-COPY --from=builder /home/gradle/project/build/libs/demo-0.0.1-SNAPSHOT.jar ./demo.jar
+COPY --from=builder /home/project/build/libs/demo-0.0.1-SNAPSHOT.jar ./demo.jar
 
+# Port, auf dem Spring Boot läuft
 EXPOSE 8080
 
+# Spring Boot starten
 ENTRYPOINT ["java", "-jar", "demo.jar"]
