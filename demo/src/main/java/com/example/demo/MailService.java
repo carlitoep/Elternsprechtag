@@ -13,7 +13,7 @@ public class MailService {
 
     public void sendVerificationEmail(String toEmail, String token) {
         System.out.println("✅ MAILSERVICE AKTIV — versuche zu senden an: " + toEmail);
-        String verifyUrl = "http://localhost:8080/api/verify?token=" + token;
+        String verifyUrl = "https://elternsprechtag-1.onrender.com/api/verify?token=" + token;
 
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setTo(toEmail);
