@@ -1,5 +1,6 @@
 # ======== Stage 1: Build ========
-FROM gradle:8.1.1-jdk21 AS builder
+FROM gradle:8.2-jdk21
+
 
 WORKDIR /home/gradle/project
 
