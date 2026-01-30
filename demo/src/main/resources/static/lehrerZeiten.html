@@ -11,7 +11,7 @@
       window.onload = function () {
         let formData2 = new URLSearchParams();
         formData2.append("lehrername", lehrerName);
-        fetch("https://elternsprechtag-backend.onrender.com/api/raum", {
+        fetch("https://elternsprechtag-1.onrender.com/api/raum", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData2,
@@ -27,7 +27,7 @@
         let formData = new URLSearchParams();
         formData.append("lehrername", lehrerName);
 
-        fetch("https://elternsprechtag-backend.onrender.com/api/lehrer", {
+        fetch("https://elternsprechtag-1.onrender.com/api/lehrer", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData,
@@ -70,7 +70,7 @@
         formData.append("anfangM", anfang.split(":")[1]);
         formData.append("endeM", ende.split(":")[1]);
 
-        fetch("https://elternsprechtag-backend.onrender.com/api/zeitenAendern", {
+        fetch("https://elternsprechtag-1.onrender.com/api/zeitenAendern", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData,
@@ -113,7 +113,7 @@
         formData.append("lehrername", lehrerName);
         formData.append("urzeit", uhrzeit);
 
-        fetch("https://elternsprechtag-backend.onrender.com/api/buchen", {
+        fetch("https://elternsprechtag-1.onrender.com/api/buchen", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData,
@@ -136,7 +136,7 @@
         formData.append("name", name);
         formData.append("lehrername", lehrer);
         formData.append("uhrzeit", uhrzeit);
-        fetch("https://elternsprechtag-backend.onrender.com/api/loeschenmoeglich", {
+        fetch("https://elternsprechtag-1.onrender.com/api/loeschenmoeglich", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData,
@@ -169,7 +169,7 @@
         formData.append("name", name);
         formData.append("lehrername", lehrer);
         formData.append("uhrzeit", uhrzeit);
-        fetch("https://elternsprechtag-backend.onrender.com/api/loeschen", {
+        fetch("https://elternsprechtag-1.onrender.com/api/loeschen", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData,
