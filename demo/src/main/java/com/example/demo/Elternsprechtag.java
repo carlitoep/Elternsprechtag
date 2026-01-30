@@ -50,9 +50,14 @@ public class Elternsprechtag {
     @Autowired
     private MailService mailService;
 
-    public Elternsprechtag(TerminRepository terminRepository) {
-        this.terminRepository = terminRepository;
-    }
+
+@Autowired
+public Elternsprechtag(TerminRepository terminRepository, MailService mailService, MailRepository mailRepository) {
+    this.terminRepository = terminRepository;
+    this.mailService = mailService;
+    this.mailRepository = mailRepository;
+}
+
 
     static final int LEHRERANZAHL = 5;
     static final int DAUER = 120;
