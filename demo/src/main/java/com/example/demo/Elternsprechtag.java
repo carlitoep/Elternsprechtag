@@ -7,6 +7,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -36,9 +37,9 @@ import java.time.LocalTime;
 import jakarta.annotation.PostConstruct;
 
 @SpringBootApplication
+    @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
 
 public class Elternsprechtag {
     @Autowired
@@ -58,21 +59,23 @@ public class Elternsprechtag {
     static final int ABSCHNITTE = 10;
     static final int START = 17;
     static final DecimalFormat df = new DecimalFormat("00");
-    String EXCEL_FILE_PATH = getClass().getClassLoader().getResource("Lehrer.xlsx").getPath();
-    String EXCEL_FILE_PATH2 = getClass().getClassLoader().getResource("Raum.xlsx").getPath();
-    String EXCEL_FILE_PATH3 = getClass().getClassLoader().getResource("Sicherheit.xlsx").getPath();
 
     private static final Logger logger = LoggerFactory.getLogger(Elternsprechtag.class);
 
     private Map<String, List<String>> lehrerzeiten = new HashMap<>();
     private Map<String, int[]> startzeiten = new HashMap<>();
 
-    String decodedPath = URLDecoder.decode(EXCEL_FILE_PATH, StandardCharsets.UTF_8);
-    String decodedPath2 = URLDecoder.decode(EXCEL_FILE_PATH2, StandardCharsets.UTF_8);
-    String decodedPath3 = URLDecoder.decode(EXCEL_FILE_PATH3, StandardCharsets.UTF_8);
+   
+    private InputStream loadExcel(String name) {
+        InputStream is = getClass().getClassLoader().getResourceAsStream(name);
+        if (is == null) {
+            throw new RuntimeException("Excel-Datei nicht gefunden: " + name);
+        }
+        return is;
+    }
 
-    public String leseZelle(int zeile, int spalte, String decodedPath0) {
-        try (FileInputStream file = new FileInputStream(new File(decodedPath0));
+    public String leseZelle(int zeile, int spalte, String excelName) {
+        try (InputStream file = loadExcel(excelName);
                 Workbook workbook = new XSSFWorkbook(file)) {
 
             Sheet sheet = workbook.getSheetAt(0);
@@ -89,9 +92,9 @@ public class Elternsprechtag {
         return "Kein Wert gefunden";
     }
 
-    public List<String> leseSpalte(int spalte, String decodedPath0) {
+    public List<String> leseSpalte(int spalte, String excelName) {
         List<String> werte = new ArrayList<>();
-        try (FileInputStream file = new FileInputStream(new File(decodedPath0));
+        try (InputStream file = loadExcel(excelName);
                 Workbook workbook = new XSSFWorkbook(file)) {
 
             Sheet sheet = workbook.getSheetAt(0);
@@ -105,7 +108,6 @@ public class Elternsprechtag {
             e.printStackTrace();
         }
         return werte;
-
     }
 
     public List<String> getLehrer(String schuelername) {
@@ -113,18 +115,18 @@ public class Elternsprechtag {
         List<String> lehrer = new ArrayList<>();
         List<String> schuelerSpalte = new ArrayList<>();
         List<String> lehrerKurz = new ArrayList<>();
-        lehrerKurz = leseSpalte(0, decodedPath2);
-        schuelerSpalte = leseSpalte(2, decodedPath);
+        lehrerKurz = leseSpalte(0, "Raum.xlsx");
+        schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
         for (int i = 0; i < schuelerSpalte.size(); i++) {
             if (schuelerSpalte.get(i).toLowerCase().equals(schuelername.toLowerCase())) {
-                if (lehrerKurz.contains(leseZelle(i, 8, decodedPath))) {
-                    int index = lehrerKurz.indexOf(leseZelle(i, 8, decodedPath));
-                    if (leseZelle(index, 1, decodedPath2) != null && leseZelle(index, 1, decodedPath2) != "") {
-                        lehrer.add(leseZelle(index, 1, decodedPath2) + " " + leseZelle(i, 9, decodedPath));
+                if (lehrerKurz.contains(leseZelle(i, 8, "Lehrer.xlsx"))) {
+                    int index = lehrerKurz.indexOf(leseZelle(i, 8, "Lehrer.xlsx"));
+                    if (leseZelle(index, 1, "Raum.xlsx") != null && leseZelle(index, 1, "Raum.xlsx") != "") {
+                        lehrer.add(leseZelle(index, 1, "Raum.xlsx") + " " + leseZelle(i, 9, "Lehrer.xlsx"));
                         continue;
                     }
                 }
-                lehrer.add(leseZelle(i, 8, decodedPath) + " " + leseZelle(i, 9, decodedPath));
+                lehrer.add(leseZelle(i, 8, "Lehrer.xlsx") + " " + leseZelle(i, 9, "Lehrer.xlsx"));
             }
         }
 
@@ -144,7 +146,6 @@ public class Elternsprechtag {
 
     @PostConstruct
     public void init() {
-       
 
         /*
          * List<String> langnamen = new ArrayList<>();
@@ -165,7 +166,7 @@ public class Elternsprechtag {
         if (vorhandeneTermine.isEmpty()) {
             System.out.println("Tabelle ist leer — Termine werden neu angelegt...");
 
-            List<String> alleLehrer = leseSpalte(1, decodedPath2); // Lehrer-Namen aus Excel
+            List<String> alleLehrer = leseSpalte(1, "Lehrer.xlsx"); // Lehrer-Namen aus Excel
 
             for (String lehrer : alleLehrer) {
                 int anfangS = START;
@@ -398,7 +399,7 @@ public class Elternsprechtag {
 
     @PostMapping("/raum")
     public String raum(@RequestParam String lehrername) {
-        String raum = leseZelle(leseSpalte(1, decodedPath2).indexOf(lehrername), 2, decodedPath2);
+        String raum = leseZelle(leseSpalte(1, "Raum.xlsx").indexOf(lehrername), 2, "Raum.xlsx");
         return raum;
     }
 
