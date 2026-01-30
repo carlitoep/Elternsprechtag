@@ -52,7 +52,7 @@ public class Elternsprechtag {
 
 
 @Autowired
-public Elternsprechtag(TerminRepository terminRepository, MailService mailService, MailRepository mailRepository) {
+public Elternsprechtag(TerminRepository terminRepository, MailService mailService, mailRepository mailRepository) {
     this.terminRepository = terminRepository;
     this.mailService = mailService;
     this.mailRepository = mailRepository;
