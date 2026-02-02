@@ -272,7 +272,7 @@ public String resetTermine() {
     return "Termine gelöscht und neu angelegt";
 }
     @GetMapping("/debug/reset-verify")
-public String resetTermine() {
+public String resetVerify() {
     mailRepository.deleteAll();
     return "verify gelöscht und neu angelegt";
 }
