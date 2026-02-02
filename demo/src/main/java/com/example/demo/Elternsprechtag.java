@@ -271,6 +271,11 @@ public String resetTermine() {
     init();
     return "Termine gelöscht und neu angelegt";
 }
+    @GetMapping("/debug/reset-verify")
+public String resetTermine() {
+    mailRepository.deleteAll();
+    return "verify gelöscht und neu angelegt";
+}
 
     @PostMapping("/buchen")
     public String bucheTermin(@RequestParam String name, @RequestParam String lehrername, @RequestParam String urzeit) {
