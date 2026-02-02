@@ -13,6 +13,7 @@ public class Verifizierung {
     private Long id;
 
     private String email;
+    private String schuelername;
     private String token;
     private boolean bestaetigt;
 
@@ -23,6 +24,10 @@ public class Verifizierung {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getSchuelername() {
+        return schuelername;
     }
 
     public String getToken() {
@@ -47,5 +52,9 @@ public class Verifizierung {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setSchuelername(String schuelername) {
+        this.schuelername = schuelername;
     }
 }
