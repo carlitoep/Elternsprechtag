@@ -260,7 +260,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
 public List<Termin> debugTermine() {
     return terminRepository.findAll();
 }
-@PostMapping("/debug/reset-termine")
+@GetMapping("/debug/reset-termine")
 public String resetTermine() {
     terminRepository.deleteAll();
     init();
