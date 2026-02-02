@@ -262,7 +262,7 @@ public List<Termin> debugTermine() {
 }
 
      @GetMapping("/debug/verify")
-public List<Termin> debugVerify() {
+public List<Verifizierung> debugVerify() {
     return mailRepository.findAll();
 }
 @GetMapping("/debug/reset-termine")
