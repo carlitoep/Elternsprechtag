@@ -92,7 +92,9 @@
               let container = document.getElementById("container");
               container.appendChild(div);
               div.appendChild(p);
+               console.log(element);
               let teile = element.split(":");
+              console.log(teile);
               if (teile[2] == "frei") {
                 div.style.backgroundColor = "green";
               } else {
