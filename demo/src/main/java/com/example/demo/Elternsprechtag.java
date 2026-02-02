@@ -176,7 +176,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         if (vorhandeneTermine.isEmpty()) {
             System.out.println("Tabelle ist leer — Termine werden neu angelegt...");
 
-            List<String> alleLehrer = leseSpalte(1, "Lehrer.xlsx"); // Lehrer-Namen aus Excel
+            List<String> alleLehrer = leseSpalte(1, "Raum.xlsx"); // Lehrer-Namen aus Excel
 
             for (String lehrer : alleLehrer) {
                 int anfangS = START;
