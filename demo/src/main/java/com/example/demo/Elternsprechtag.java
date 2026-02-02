@@ -444,51 +444,46 @@ public String raum(@RequestParam String lehrername) {
 }
 
 
-    @PostMapping("/berechtigt")
+     @PostMapping("/berechtigt")
     public boolean berechtigt(@RequestParam String schuelername, @RequestParam String email) {
-        /*
-         * schuelername = capitalizeFirstLetter(schuelername);
-         * int index = leseSpalte(0, decodedPath3).indexOf(schuelername);
-         * String geburtsdatumString = leseZelle(index, 1, decodedPath3);
-         * String straßenName = leseZelle(index, 2, decodedPath3);
-         * return geburtsdatumString.equals(geburtsdatum) && straße.length() >= 4
-         * && straßenName.toLowerCase().startsWith(straße.toLowerCase());
-         */
-        // Prüfen, ob Email bereits verifiziert
-        Verifizierung verif = mailRepository.findByEmail(email);
 
-        System.out.println("✅ /berechtigt wurde aufgerufen mit: " + email);
+        schuelername = capitalizeFirstLetter(schuelername);
 
-        if (verif == null || !verif.getBestaetigt()) {
-            // Noch keine Verifizierung -> neu anlegen + Mail senden
-            System.out.println("✅ Neuer Eintrag -> Mail wird gesendet");
-            String token = UUID.randomUUID().toString();
+        System.out.println("✅ /berechtigt aufgerufen mit: " + schuelername + ", " + email);
 
-            Verifizierung neu = new Verifizierung();
-            neu.setEmail(email);
-            neu.setToken(token);
-            neu.setBestaetigt(false);
-            mailRepository.save(neu);
+        // Prüfen, ob der Schüler schon eine Mail hat
+        Verifizierung bestehend = mailRepository.findBySchuelername(schuelername);
 
-            System.out.println("✅ Aufruf von mailService.sendVerificationEmail()");
-          try {
-    mailService.sendVerificationEmail(email, token);
-} catch (Exception e) {
-    logger.error("❌ Mailversand fehlgeschlagen", e);
-}
+        if (bestehend != null) {
+            if (!bestehend.getEmail().equalsIgnoreCase(email)) {
+                // Ein anderer Versuch mit anderer Mail → blockieren
+                System.out.println("❌ Schüler hat schon eine andere Mail: " + bestehend.getEmail());
+                return false;
+            }
 
+            // Bereits verifiziert?
+            if (bestehend.getBestaetigt()) {
+                return true;
+            }
 
-            return false; // Frontend sagt dann: Geh zur E-Mail und klick auf den Link
+            // Noch nicht verifiziert → Mail erneut senden
+            mailService.sendVerificationEmail(email, bestehend.getToken());
+            return false;
         }
 
-        /*
-         * if (!verif.getBestaetigt()) {
-         * return false;
-         * }
-         */
+        // Neuer Eintrag
+        String token = UUID.randomUUID().toString();
+        Verifizierung neu = new Verifizierung();
+        neu.setSchuelername(schuelername);
+        neu.setEmail(email);
+        neu.setToken(token);
+        neu.setBestaetigt(false);
+        mailRepository.save(neu);
 
-        return true;
+        System.out.println("✅ Neuer Eintrag -> Mail wird gesendet an: " + email);
+        mailService.sendVerificationEmail(email, token);
 
+        return false;
     }
 
     @GetMapping("/verify")
