@@ -72,14 +72,18 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
 
    
     private InputStream loadExcel(String name) {
-        InputStream is = getClass().getClassLoader().getResourceAsStream(name);
-        if (is == null) {
-            throw new RuntimeException("Excel-Datei nicht gefunden: " + name);
-        }
-        return is;
+    InputStream is = getClass().getClassLoader().getResourceAsStream(name);
+    if (is == null) {
+        logger.error("❌ Excel-Datei nicht gefunden: {}", name);
+        return null;
+    }
+    return is;
+}
+
     }
 
     public String leseZelle(int zeile, int spalte, String excelName) {
+ 
         try (InputStream file = loadExcel(excelName);
                 Workbook workbook = new XSSFWorkbook(file)) {
 
@@ -166,6 +170,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
          * startzeiten.put(langnamen.get(i), new int[] { START, 0 });
          * }
          */
+        try {
         List<Termin> vorhandeneTermine = terminRepository.findAll();
 
         if (vorhandeneTermine.isEmpty()) {
@@ -201,7 +206,9 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         } else {
             System.out.println("Termine existieren bereits — es wird nichts neu angelegt.");
         }
-
+ } catch (Exception e) {
+        logger.error("❌ Fehler in @PostConstruct init()", e);
+    }
     }
 
     @PostMapping("/zeiten")
@@ -402,11 +409,18 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         }
     }
 
-    @PostMapping("/raum")
-    public String raum(@RequestParam String lehrername) {
-        String raum = leseZelle(leseSpalte(1, "Raum.xlsx").indexOf(lehrername), 2, "Raum.xlsx");
-        return raum;
+   @PostMapping("/raum")
+public String raum(@RequestParam String lehrername) {
+    List<String> namen = leseSpalte(1, "Raum.xlsx");
+
+    if (!namen.contains(lehrername)) {
+        return "Kein Raum gefunden";
     }
+
+    int index = namen.indexOf(lehrername);
+    return leseZelle(index, 2, "Raum.xlsx");
+}
+
 
     @PostMapping("/berechtigt")
     public boolean berechtigt(@RequestParam String schuelername, @RequestParam String email) {
@@ -435,7 +449,12 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
             mailRepository.save(neu);
 
             System.out.println("✅ Aufruf von mailService.sendVerificationEmail()");
-            mailService.sendVerificationEmail(email, token);
+          try {
+    mailService.sendVerificationEmail(email, token);
+} catch (Exception e) {
+    logger.error("❌ Mailversand fehlgeschlagen", e);
+}
+
 
             return false; // Frontend sagt dann: Geh zur E-Mail und klick auf den Link
         }
