@@ -260,7 +260,12 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
 public List<Termin> debugTermine() {
     return terminRepository.findAll();
 }
-
+@PostMapping("/debug/reset-termine")
+public String resetTermine() {
+    terminRepository.deleteAll();
+    init();
+    return "Termine gelöscht und neu angelegt";
+}
 
     @PostMapping("/buchen")
     public String bucheTermin(@RequestParam String name, @RequestParam String lehrername, @RequestParam String urzeit) {
