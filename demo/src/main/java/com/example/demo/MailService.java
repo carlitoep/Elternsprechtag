@@ -18,6 +18,7 @@ public class MailService {
             msg.setTo(toEmail);
             msg.setSubject("Bitte bestätige deine E-Mail-Adresse");
             msg.setText("Klicke hier, um zu bestätigen:\n" + verifyUrl);
+            msg.setFrom("carlitoepons@gmail.com");
 
             mailSender.send(msg);
             System.out.println("✅ Mail erfolgreich gesendet an: " + toEmail);
