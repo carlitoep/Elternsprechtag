@@ -131,9 +131,9 @@
 
       function löschbar(stelle, zeitenArray, uhrzeit, name) {
         let lehrer =
-          localStorage.getItem("lehrer").split(" ")[0] +
+          localStorage.getItem("lehrerName").split(" ")[0] +
           " " +
-          localStorage.getItem("lehrer").split(" ")[1];
+          localStorage.getItem("lehrerName").split(" ")[1];
         let formData = new URLSearchParams();
         formData.append("name", name);
         formData.append("lehrername", lehrer);
