@@ -244,6 +244,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         if (termine.isEmpty()) {
             return List.of("Fehler: Lehrer nicht gefunden");
         }
+        
 
         List<String> freieZeiten = new ArrayList<>();
         for (Termin t : termine) {
@@ -254,6 +255,12 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         return freieZeiten;
 
     }
+
+    @GetMapping("/debug/termine")
+public List<Termin> debugTermine() {
+    return terminRepository.findAll();
+}
+
 
     @PostMapping("/buchen")
     public String bucheTermin(@RequestParam String name, @RequestParam String lehrername, @RequestParam String urzeit) {
