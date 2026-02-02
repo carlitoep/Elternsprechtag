@@ -80,7 +80,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
     return is;
 }
 
-    }
+
 
     public String leseZelle(int zeile, int spalte, String excelName) {
  
