@@ -274,7 +274,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
  @GetMapping("/debug/all")
 public String debugAll() {
     
-    List<String> alleLehrer = leseSpalte(1, "Lehrer.xlsx");
+    List<String> alleLehrer = leseSpalte(1, "Raum.xlsx");
 
     int startMinute = START * 60;
     int endMinute = 20 * 60; // 20:00
