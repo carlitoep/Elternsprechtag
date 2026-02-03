@@ -210,6 +210,40 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         logger.error("❌ Fehler in @PostConstruct init()", e);
     }
     }
+    @PostConstruct
+public void initTermineSicher() {
+
+    List<String> alleLehrer = leseSpalte(1, "Lehrer.xlsx");
+
+    int startMinute = START * 60;
+    int endMinute = 20 * 60; // 20:00
+
+    for (String lehrer : alleLehrer) {
+
+        for (int minute = startMinute; minute < endMinute; minute += ABSCHNITTE) {
+
+            int stunde = minute / 60;
+            int min = minute % 60;
+            String uhrzeit = String.format("%02d:%02d", stunde, min);
+
+            boolean existiert = terminRepository
+                    .existsByLehrernameAndUhrzeit(lehrer, uhrzeit);
+
+            if (existiert) {
+                continue; // ⏭️ Termin gibt es schon → nichts tun
+            }
+
+            Termin termin = new Termin();
+            termin.setLehrername(lehrer);
+            termin.setUhrzeit(uhrzeit);
+            termin.setSchuelername(null);
+
+            terminRepository.save(termin);
+        }
+    }
+
+    System.out.println("✅ Fehlende Termine wurden ergänzt (bestehende blieben erhalten).");
+}
 
     @PostMapping("/zeiten")
     public List<String> freieZeiten(@RequestParam String lehrername) {
@@ -307,7 +341,7 @@ public String resetVerify() {
          */
 
         // LocalTime zeit = LocalTime.parse(urzeit);
-
+name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name;
         Optional<Termin> optionalTermin = terminRepository.findByLehrernameAndUhrzeit(lehrername, urzeit);
 
         if (optionalTermin.isEmpty()) {
@@ -330,7 +364,7 @@ public String resetVerify() {
 
     @PostMapping("/buchenMoeglich")
     public String buchenMoeglich(@RequestParam String name, @RequestParam String lehrername) {
-
+name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name;
         if (terminRepository.existsByLehrernameAndSchuelername(lehrername, name)) {
             return "nicht möglich";
         } else {
@@ -376,7 +410,7 @@ public String resetVerify() {
     @PostMapping("/loeschen")
     public String loescheTermin(@RequestParam String name, @RequestParam String lehrername,
             @RequestParam String uhrzeit) {
-
+name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name;
         // Uhrzeit anhand der Stelle berechnen
         /*
          * String uhrzeit;
@@ -418,7 +452,7 @@ public String resetVerify() {
          * uhrzeit = String.format("%02d:%02d", START + 1, stelle * 10);
          * }
          */
-
+name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name;
         System.out.println(uhrzeit);
         boolean existiert = terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername, name, uhrzeit);
 
