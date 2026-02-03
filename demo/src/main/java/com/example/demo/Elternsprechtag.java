@@ -304,7 +304,7 @@ public List<Termin> debugAll() {
     }
 
     System.out.println("✅ Fehlende Termine wurden ergänzt (bestehende blieben erhalten).");
-    return "finished"
+    return "finished";
 }
     @GetMapping("/debug/termine")
 public List<Termin> debugTermine() {
