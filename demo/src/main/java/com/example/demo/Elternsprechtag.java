@@ -272,7 +272,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
 
     }
  @GetMapping("/debug/all")
-public List<Termin> debugAll() {
+public String debugAll() {
     
     List<String> alleLehrer = leseSpalte(1, "Lehrer.xlsx");
 
