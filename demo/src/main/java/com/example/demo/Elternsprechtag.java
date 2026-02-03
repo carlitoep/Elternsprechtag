@@ -60,7 +60,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
 
 
     static final int LEHRERANZAHL = 5;
-    static final int DAUER = 120;
+    static final int DAUER = 180;
     static final int ABSCHNITTE = 10;
     static final int START = 17;
     static final DecimalFormat df = new DecimalFormat("00");
