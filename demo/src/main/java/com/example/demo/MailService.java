@@ -1,28 +1,44 @@
 package com.example.demo;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${sendgrid.api.key}")
+    private String sendGridApiKey;
+
+    @Value("${sendgrid.sender.email}")
+    private String senderEmail;
+
+    @Value("${sendgrid.sender.name}")
+    private String senderName;
 
     public void sendVerificationEmail(String toEmail, String token) {
+        String verifyUrl = "https://elternsprechtag-1.onrender.com/api/verify?token=" + token;
+
+        Email from = new Email(senderEmail, senderName);
+        Email to = new Email(toEmail);
+        String subject = "Bitte bestätige deine E-Mail-Adresse";
+        Content content = new Content("text/plain", "Klicke hier, um zu bestätigen:\n" + verifyUrl);
+
+        Mail mail = new Mail(from, subject, to, content);
+
+        SendGrid sg = new SendGrid(sendGridApiKey);
+        Request request = new Request();
+
         try {
-            String verifyUrl = "https://elternsprechtag-1.onrender.com/api/verify?token=" + token;
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(toEmail);
-            msg.setSubject("Bitte bestätige deine E-Mail-Adresse");
-            msg.setText("Klicke hier, um zu bestätigen:\n" + verifyUrl);
-            msg.setFrom("carlitoepons@gmail.com");
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
 
-            mailSender.send(msg);
-            System.out.println("✅ Mail erfolgreich gesendet an: " + toEmail);
-
+            System.out.println("✅ Mail gesendet an: " + toEmail + " | Status: " + response.getStatusCode());
         } catch (Exception e) {
             System.err.println("❌ Mailversand fehlgeschlagen an: " + toEmail);
             e.printStackTrace();
