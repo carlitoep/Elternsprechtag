@@ -57,11 +57,22 @@
           placeholder.selected = true;
           dropdown.appendChild(placeholder);
 
-          lehrerDesSchulers.forEach(lehrer => {
+       lehrerDesSchulers.forEach(lehrer => {
+            console.log(lehrer)
+            console.log("2" + lehrer.toLowerCase().replace(/\s+/g, "-"))
                 let opt = document.createElement("option");
-                opt.value = lehrer.toLowerCase().replace(/\s+/g, "-"); // Wert setzen (klein & mit Bindestrichen)
+        if (lehrer.split(" ")[3]==undefined) {
+           opt.value = lehrer.split(" ")[0]+ " " + lehrer.split(" ")[1];
+        } else {
+          opt.value =
+            lehrer.split(" ")[0] +
+            " " +
+            lehrer.split(" ")[1];
+          +" " + lehrer.split(" ")[2];
+        }
+                // Wert setzen (klein & mit Bindestrichen)
                 opt.textContent = lehrer; // Sichtbarer Text
-                opt.value = lehrer
+               // opt.value = lehrer
                 dropdown.appendChild(opt);
             });
             document.getElementById("lehrerdiv").appendChild(dropdown);
