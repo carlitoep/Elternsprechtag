@@ -119,28 +119,43 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         return werte;
     }
 
-    public List<String> getLehrer(String schuelername) {
-        schuelername = capitalizeFirstLetter(schuelername);
-        List<String> lehrer = new ArrayList<>();
-        List<String> schuelerSpalte = new ArrayList<>();
-        List<String> lehrerKurz = new ArrayList<>();
-        lehrerKurz = leseSpalte(0, "Raum.xlsx");
-        schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-        for (int i = 0; i < schuelerSpalte.size(); i++) {
-            if (schuelerSpalte.get(i).toLowerCase().equals(schuelername.toLowerCase())) {
-                if (lehrerKurz.contains(leseZelle(i, 8, "Lehrer.xlsx"))) {
-                    int index = lehrerKurz.indexOf(leseZelle(i, 8, "Lehrer.xlsx"));
-                    if (leseZelle(index, 1, "Raum.xlsx") != null && leseZelle(index, 1, "Raum.xlsx") != "") {
-                        lehrer.add(leseZelle(index, 1, "Raum.xlsx") + " " + leseZelle(i, 9, "Lehrer.xlsx"));
-                        continue;
-                    }
-                }
-                lehrer.add(leseZelle(i, 8, "Lehrer.xlsx") + " " + leseZelle(i, 9, "Lehrer.xlsx"));
-            }
+     public List<String> getLehrer(String schuelername) {
+    schuelername = capitalizeFirstLetter(schuelername).toLowerCase();
+
+    List<String> result = new ArrayList<>();
+
+    // Raum.xlsx → Kürzel → Raum
+    Map<String, String> raumByKuerzel = new HashMap<>();
+    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
+    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
+
+    for (int i = 0; i < raumKuerzel.size(); i++) {
+        raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
+    }
+
+    // Lehrer.xlsx komplett einmal lesen
+    List<String> schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
+    List<String> lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
+    List<String> lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
+
+    for (int i = 0; i < schuelerSpalte.size(); i++) {
+        if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
+            continue;
         }
 
-        return lehrer;
+        String kuerzel = lehrerKuerzel.get(i);
+        String name = lehrerNamen.get(i);
+
+        String raum = raumByKuerzel.get(kuerzel);
+        if (raum != null && !raum.isBlank()) {
+            result.add(raum + " " + name);
+        } else {
+            result.add(kuerzel + " " + name);
+        }
     }
+
+    return result;
+}
 
     public static String capitalizeFirstLetter(String str) {
         if (str == null || str.isEmpty()) {
