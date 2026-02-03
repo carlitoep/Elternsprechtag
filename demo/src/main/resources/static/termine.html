@@ -8,10 +8,19 @@
     <script>
       function bucheTermin(stunden, minuten) {
         let name = localStorage.getItem("name");
-        let lehrer =
-          localStorage.getItem("lehrer").split(" ")[0] +
-          " " +
-          localStorage.getItem("lehrer").split(" ")[1];
+       let lehrer;
+        if (localStorage.getItem("lehrer").split(" ")[2] == undefined) {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
+            " " +
+            localStorage.getItem("lehrer").split(" ")[1];
+        } else {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
+            " " +
+            localStorage.getItem("lehrer").split(" ")[1];
+          +" " + localStorage.getItem("lehrer").split(" ")[2];
+        }
         console.log(lehrer);
         let uhrzeit = `${stunden}:${minuten}`;
         if (!uhrzeit) {
@@ -42,11 +51,19 @@
       window.onload = function () {
         let name = localStorage.getItem("name");
         let raum = " ";
-        let lehrer = String(
-          localStorage.getItem("lehrer").split(" ")[0] +
+       let lehrer;
+        if (localStorage.getItem("lehrer").split(" ")[2] == undefined) {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
             " " +
-            localStorage.getItem("lehrer").split(" ")[1]
-        );
+            localStorage.getItem("lehrer").split(" ")[1];
+        } else {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
+            " " +
+            localStorage.getItem("lehrer").split(" ")[1];
+          +" " + localStorage.getItem("lehrer").split(" ")[2];
+        }
         console.log(lehrer);
         let formData2 = new URLSearchParams();
         formData2.append("lehrername", lehrer);
@@ -95,11 +112,19 @@
       function button(zeitenArray, element, stelle, div) {
         let formData = new URLSearchParams();
         let name = localStorage.getItem("name");
-        let lehrer =
-          localStorage.getItem("lehrer").split(" ")[0] +
-          " " +
-          localStorage.getItem("lehrer").split(" ")[1];
-
+      let lehrer;
+        if (localStorage.getItem("lehrer").split(" ")[2] == undefined) {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
+            " " +
+            localStorage.getItem("lehrer").split(" ")[1];
+        } else {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
+            " " +
+            localStorage.getItem("lehrer").split(" ")[1];
+          +" " + localStorage.getItem("lehrer").split(" ")[2];
+        }
         formData.append("name", name);
         formData.append("lehrername", lehrer);
 
@@ -158,10 +183,19 @@
 
       function löschbar(stelle, zeitenArray, uhrzeit) {
         let name = localStorage.getItem("name");
-        let lehrer =
-          localStorage.getItem("lehrer").split(" ")[0] +
-          " " +
-          localStorage.getItem("lehrer").split(" ")[1];
+      let lehrer;
+        if (localStorage.getItem("lehrer").split(" ")[2] == undefined) {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
+            " " +
+            localStorage.getItem("lehrer").split(" ")[1];
+        } else {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
+            " " +
+            localStorage.getItem("lehrer").split(" ")[1];
+          +" " + localStorage.getItem("lehrer").split(" ")[2];
+        }
         let formData = new URLSearchParams();
         formData.append("name", name);
         formData.append("lehrername", lehrer);
@@ -193,10 +227,19 @@
       function löscheTermin(stelle, uhrzeit) {
         let formData = new URLSearchParams();
         let name = localStorage.getItem("name");
-        let lehrer =
-          localStorage.getItem("lehrer").split(" ")[0] +
-          " " +
-          localStorage.getItem("lehrer").split(" ")[1];
+        let lehrer;
+        if (localStorage.getItem("lehrer").split(" ")[2] == undefined) {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
+            " " +
+            localStorage.getItem("lehrer").split(" ")[1];
+        } else {
+          lehrer =
+            localStorage.getItem("lehrer").split(" ")[0] +
+            " " +
+            localStorage.getItem("lehrer").split(" ")[1];
+          +" " + localStorage.getItem("lehrer").split(" ")[2];
+        }
         formData.append("name", name);
         formData.append("lehrername", lehrer);
         formData.append("uhrzeit", uhrzeit);
