@@ -225,40 +225,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         logger.error("❌ Fehler in @PostConstruct init()", e);
     }
     }
-    @PostConstruct
-public void initTermineSicher() {
-
-    List<String> alleLehrer = leseSpalte(1, "Lehrer.xlsx");
-
-    int startMinute = START * 60;
-    int endMinute = 20 * 60; // 20:00
-
-    for (String lehrer : alleLehrer) {
-
-        for (int minute = startMinute; minute < endMinute; minute += ABSCHNITTE) {
-
-            int stunde = minute / 60;
-            int min = minute % 60;
-            String uhrzeit = String.format("%02d:%02d", stunde, min);
-
-            boolean existiert = terminRepository
-                    .existsByLehrernameAndUhrzeit(lehrer, uhrzeit);
-
-            if (existiert) {
-                continue; // ⏭️ Termin gibt es schon → nichts tun
-            }
-
-            Termin termin = new Termin();
-            termin.setLehrername(lehrer);
-            termin.setUhrzeit(uhrzeit);
-            termin.setSchuelername(null);
-
-            terminRepository.save(termin);
-        }
-    }
-
-    System.out.println("✅ Fehlende Termine wurden ergänzt (bestehende blieben erhalten).");
-}
+  
 
     @PostMapping("/zeiten")
     public List<String> freieZeiten(@RequestParam String lehrername) {
@@ -304,7 +271,41 @@ public void initTermineSicher() {
         return freieZeiten;
 
     }
+ @GetMapping("/debug/all")
+public List<Termin> debugAll() {
+    
+    List<String> alleLehrer = leseSpalte(1, "Lehrer.xlsx");
 
+    int startMinute = START * 60;
+    int endMinute = 20 * 60; // 20:00
+
+    for (String lehrer : alleLehrer) {
+
+        for (int minute = startMinute; minute < endMinute; minute += ABSCHNITTE) {
+
+            int stunde = minute / 60;
+            int min = minute % 60;
+            String uhrzeit = String.format("%02d:%02d", stunde, min);
+
+            boolean existiert = terminRepository
+                    .existsByLehrernameAndUhrzeit(lehrer, uhrzeit);
+
+            if (existiert) {
+                continue; // ⏭️ Termin gibt es schon → nichts tun
+            }
+
+            Termin termin = new Termin();
+            termin.setLehrername(lehrer);
+            termin.setUhrzeit(uhrzeit);
+            termin.setSchuelername(null);
+
+            terminRepository.save(termin);
+        }
+    }
+
+    System.out.println("✅ Fehlende Termine wurden ergänzt (bestehende blieben erhalten).");
+    return "finished"
+}
     @GetMapping("/debug/termine")
 public List<Termin> debugTermine() {
     return terminRepository.findAll();
