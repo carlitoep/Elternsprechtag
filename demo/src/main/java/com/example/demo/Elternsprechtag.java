@@ -385,11 +385,27 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
 
     @PostMapping("/buchenMoeglich")
     public String buchenMoeglich(@RequestParam String name, @RequestParam String lehrername) {
-name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name;
+
         if (terminRepository.existsByLehrernameAndSchuelername(lehrername, name)) {
             return "nicht möglich";
-        } else {
-            return "möglich";
+        } else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(",") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name)){
+            return "nicht möglich";
+        } else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name)){
+             return "nicht möglich";
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(",") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name)){
+             return "nicht möglich";
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(",") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name)){
+             return "nicht möglich";
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(" ") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name)){
+            return "nicht möglich";
+        } else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(" ") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name)){
+             return "nicht möglich";
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(" ") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name)){
+             return "nicht möglich";
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(" ") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name)){
+             return "nicht möglich";
+        }else {
+             return "möglich";
         }
 
     }
@@ -431,7 +447,7 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
     @PostMapping("/loeschen")
     public String loescheTermin(@RequestParam String name, @RequestParam String lehrername,
             @RequestParam String uhrzeit) {
-name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name;
+
         // Uhrzeit anhand der Stelle berechnen
         /*
          * String uhrzeit;
@@ -441,19 +457,84 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
          * uhrzeit = String.format("%02d:%02d", START + 1, (stelle - 6) * 10);
          * }
          */
-
-        // Termin suchen
-        Termin termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name, uhrzeit);
-
-        if (termin == null) {
-            return "Diesen Termin hast du nicht gebucht";
+        Termin termin;
+   if (terminRepository.existsByLehrernameAndSchuelername(lehrername, name)) {
+        termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name, uhrzeit);
+        if (termin != null) {
+             // Schüler auf null setzen (Slot freigeben)
+        termin.setSchuelername(null);
+        terminRepository.save(termin);
+             return "Dein Termin wurde gelöscht";
         }
-
-        // Schüler auf null setzen (Slot freigeben)
+        } else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(",") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name)){
+           termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name.contains(",") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name, uhrzeit);
+        if (termin != null) {
+             // Schüler auf null setzen (Slot freigeben)
+        termin.setSchuelername(null);
+        terminRepository.save(termin);
+             return "Dein Termin wurde gelöscht";
+        }
+        } else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name)){
+              termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name, uhrzeit);
+        if (termin != null) {
+             // Schüler auf null setzen (Slot freigeben)
+        termin.setSchuelername(null);
+        terminRepository.save(termin);
+             return "Dein Termin wurde gelöscht";
+        }
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(",") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name)){
+              termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name.contains(",") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name, uhrzeit);
+        if (termin != null) {
+             // Schüler auf null setzen (Slot freigeben)
+        termin.setSchuelername(null);
+        terminRepository.save(termin);
+             return "Dein Termin wurde gelöscht";
+        }
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(",") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name)){
+                termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name.contains(",") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name, uhrzeit);
+        if (termin != null) {
+             // Schüler auf null setzen (Slot freigeben)
+        termin.setSchuelername(null);
+        terminRepository.save(termin);
+             return "Dein Termin wurde gelöscht";
+        }
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(" ") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name)){
+            termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name.contains(" ") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name, uhrzeit);
+        if (termin != null) {
+             // Schüler auf null setzen (Slot freigeben)
+        termin.setSchuelername(null);
+        terminRepository.save(termin);
+             return "Dein Termin wurde gelöscht";
+        }
+        } else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(" ") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name)){
+              termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name.contains(" ") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name, uhrzeit);
+        if (termin != null) {
+             // Schüler auf null setzen (Slot freigeben)
         termin.setSchuelername(null);
         terminRepository.save(termin);
 
-        return "Dein Termin wurde gelöscht";
+             return "Dein Termin wurde gelöscht";
+        }
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(" ") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name)){
+              termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name.contains(" ") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name, uhrzeit);
+        if (termin != null) {
+             // Schüler auf null setzen (Slot freigeben)
+        termin.setSchuelername(null);
+        terminRepository.save(termin);
+             return "Dein Termin wurde gelöscht";
+        }
+        }else if(terminRepository.existsByLehrernameAndSchuelername(lehrername,  name.contains(" ") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name)){
+            termin = terminRepository.findByLehrernameAndSchuelernameAndUhrzeit(lehrername, name.contains(",") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name, uhrzeit);
+        if (termin != null) {
+             // Schüler auf null setzen (Slot freigeben)
+        termin.setSchuelername(null);
+        terminRepository.save(termin);
+             return "Dein Termin wurde gelöscht";
+        }
+        }else {
+             return "Diesen Termin hast du nicht gebucht";
+        }
+        
     }
 
     @PostMapping("/loeschenmoeglich")
@@ -473,16 +554,26 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
          * uhrzeit = String.format("%02d:%02d", START + 1, stelle * 10);
          * }
          */
-name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name;
-        System.out.println(uhrzeit);
-        boolean existiert = terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername, name, uhrzeit);
-
-        if (existiert) {
-
-            return "löschbar";
-        } else {
-            return "unlöschbar";
-
+             if (terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername, name, uhrzeit)) {
+          return "löschbar"
+        } else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(",") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name, uhrzeit)){
+            return "löschbar"
+        } else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name, uhrzeit)){
+             return "löschbar"
+        }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(",") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name, uhrzeit)){
+           return "löschbar"
+        }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(",") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name, uhrzeit)){
+             return "löschbar"
+        }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(" ") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name, uhrzeit)){
+        return "löschbar"
+        } else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(" ") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name, uhrzeit)){
+            return "löschbar"
+        }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(" ") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name, uhrzeit)){
+             return "löschbar"
+        }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(" ") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name, uhrzeit)){
+            return "löschbar"
+        }else {
+             return "unlöschbar";
         }
     }
 
