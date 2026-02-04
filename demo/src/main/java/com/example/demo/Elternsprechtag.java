@@ -64,7 +64,10 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
     static final int ABSCHNITTE = 10;
     static final int START = 17;
     static final DecimalFormat df = new DecimalFormat("00");
-
+private Map<String, String> raumByKuerzel;
+private List<String> schuelerSpalte;
+private List<String> lehrerKuerzel;
+private List<String> lehrerNamen;
     private static final Logger logger = LoggerFactory.getLogger(Elternsprechtag.class);
 
     private Map<String, List<String>> lehrerzeiten = new HashMap<>();
@@ -119,24 +122,10 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         return werte;
     }
 
-     public List<String> getLehrer(String schuelername) {
-    schuelername = capitalizeFirstLetter(schuelername).toLowerCase();
+   public List<String> getLehrer(String schuelername) {
+    schuelername = capitalizeFirstLetter(schuelername);
 
     List<String> result = new ArrayList<>();
-
-    // Raum.xlsx → Kürzel → Raum
-    Map<String, String> raumByKuerzel = new HashMap<>();
-    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
-    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
-
-    for (int i = 0; i < raumKuerzel.size(); i++) {
-        raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
-    }
-
-    // Lehrer.xlsx komplett einmal lesen
-    List<String> schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-    List<String> lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
-    List<String> lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
 
     for (int i = 0; i < schuelerSpalte.size(); i++) {
         if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
@@ -225,7 +214,25 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         logger.error("❌ Fehler in @PostConstruct init()", e);
     }
     }
-  
+  @PostConstruct
+public void loadExcelData() {
+    System.out.println("📦 Lade Excel-Daten einmalig...");
+
+    raumByKuerzel = new HashMap<>();
+
+    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
+    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
+
+    for (int i = 0; i < raumKuerzel.size(); i++) {
+        raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
+    }
+
+    schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
+    lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
+    lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
+
+    System.out.println("✅ Excel-Daten geladen");
+}
 
     @PostMapping("/zeiten")
     public List<String> freieZeiten(@RequestParam String lehrername) {
