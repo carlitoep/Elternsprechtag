@@ -122,10 +122,24 @@ private List<String> lehrerNamen;
         return werte;
     }
 
-   public List<String> getLehrer(String schuelername) {
-    schuelername = capitalizeFirstLetter(schuelername);
+ public List<String> getLehrer(String schuelername) {
+    schuelername = capitalizeFirstLetter(schuelername).toLowerCase();
 
     List<String> result = new ArrayList<>();
+
+    // Raum.xlsx → Kürzel → Raum
+    Map<String, String> raumByKuerzel = new HashMap<>();
+    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
+    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
+
+    for (int i = 0; i < raumKuerzel.size(); i++) {
+        raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
+    }
+
+    // Lehrer.xlsx komplett einmal lesen
+    List<String> schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
+    List<String> lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
+    List<String> lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
 
     for (int i = 0; i < schuelerSpalte.size(); i++) {
         if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
@@ -207,40 +221,16 @@ private List<String> lehrerNamen;
             }
 
             System.out.println("Termine wurden erfolgreich initial eingetragen.");
-            loadExcelData();
+          
         } else {
             System.out.println("Termine existieren bereits — es wird nichts neu angelegt.");
-            loadExcelData();
+           
         }
  } catch (Exception e) {
         logger.error("❌ Fehler in @PostConstruct init()", e);
     }
     }
 
-public void loadExcelData() {
-    try {
-        System.out.println("📦 Lade Excel-Daten...");
-
-        raumByKuerzel = new HashMap<>();
-
-        List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
-        List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
-
-        for (int i = 0; i < raumKuerzel.size(); i++) {
-            raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
-        }
-
-        schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-        lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
-        lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
-
-        System.out.println("✅ Excel geladen");
-
-    } catch (Exception e) {
-        System.err.println("⚠️ Excel konnte nicht geladen werden – App startet trotzdem");
-        e.printStackTrace();
-    }
-}
 
     @PostMapping("/zeiten")
     public List<String> freieZeiten(@RequestParam String lehrername) {
