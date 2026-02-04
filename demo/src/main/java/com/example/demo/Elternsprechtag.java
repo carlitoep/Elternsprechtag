@@ -84,53 +84,11 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
     private Map<String, int[]> startzeiten = new HashMap<>();
 
    
-    private InputStream loadExcel(String name) {
-    InputStream is = getClass().getClassLoader().getResourceAsStream(name);
-    if (is == null) {
-        logger.error("❌ Excel-Datei nicht gefunden: {}", name);
-        return null;
-    }
-    return is;
-}
-
-
-
-    public String leseZelle(int zeile, int spalte, String excelName) {
  
-        try (InputStream file = loadExcel(excelName);
-                Workbook workbook = new XSSFWorkbook(file)) {
 
-            Sheet sheet = workbook.getSheetAt(0);
-            Row row = sheet.getRow(zeile);
-            if (row != null) {
-                Cell cell = row.getCell(spalte);
-                if (cell != null) {
-                    return cell.toString();
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "Kein Wert gefunden";
-    }
 
-    public List<String> leseSpalte(int spalte, String excelName) {
-        List<String> werte = new ArrayList<>();
-        try (InputStream file = loadExcel(excelName);
-                Workbook workbook = new XSSFWorkbook(file)) {
 
-            Sheet sheet = workbook.getSheetAt(0);
-            for (Row row : sheet) {
-                Cell cell = row.getCell(spalte);
-                if (cell != null) {
-                    werte.add(cell.toString());
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return werte;
-    }
+  
 
 
 
