@@ -28,16 +28,16 @@ public class ExcelService {
 
 
     @PostConstruct
-    public synchronized void loadOnce() {
+    public synchronized void loadOnce(Elternsprechtag helper) {
         if (loaded) return;
 
     lehrernameByKuerzel = new HashMap<>();
     raumByKuerzel = new HashMap<>();
 
     // ===== Raum.xlsx =====
-    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
-    List<String> lehrerLang  = leseSpalte(1, "Raum.xlsx");
-    List<String> raeume      = leseSpalte(2, "Raum.xlsx");
+   List<String> raumKuerzel = helper.leseSpalte(0, "Raum.xlsx");
+    List<String> lehrerLang  = helper.leseSpalte(1, "Raum.xlsx");
+    List<String> raeume      = helper.leseSpalte(2, "Raum.xlsx");
 
     for (int i = 0; i < raumKuerzel.size(); i++) {
         String k = raumKuerzel.get(i).trim();
@@ -46,9 +46,9 @@ public class ExcelService {
     }
 
     // ===== Lehrer.xlsx =====
-    schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-    lehrerKuerzel  = leseSpalte(8, "Lehrer.xlsx");
-    faecher        = leseSpalte(9, "Lehrer.xlsx");
+    schuelerSpalte = helper.leseSpalte(2, "Lehrer.xlsx");
+    lehrerKuerzel  = helper.leseSpalte(8, "Lehrer.xlsx");
+    faecher        = helper.leseSpalte(9, "Lehrer.xlsx");
 
     loaded = true;
     System.out.println("✅ Excel einmalig korrekt geladen");
@@ -121,4 +121,5 @@ public class ExcelService {
 }
 
 }
+
 
