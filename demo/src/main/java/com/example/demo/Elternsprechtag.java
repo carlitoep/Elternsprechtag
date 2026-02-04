@@ -534,7 +534,7 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
         }else {
              return "Diesen Termin hast du nicht gebucht";
         }
-        
+         return "Diesen Termin hast du nicht gebucht";
     }
 
     @PostMapping("/loeschenmoeglich")
