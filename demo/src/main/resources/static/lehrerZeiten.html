@@ -135,10 +135,7 @@ v<!DOCTYPE html>
   .map(s => s.trim())
   .reverse()
   .join(", ");
-        let lehrer =
-          localStorage.getItem("lehrerName").split(" ")[0] +
-          " " +
-          localStorage.getItem("lehrerName").split(" ")[1];
+        let lehrer = lehrerName;
         let formData = new URLSearchParams();
         formData.append("name", name);
         formData.append("lehrername", lehrer);
@@ -174,10 +171,7 @@ v<!DOCTYPE html>
   .reverse()
   .join(", ");
         let formData = new URLSearchParams();
-        let lehrer =
-          localStorage.getItem("lehrer").split(" ")[0] +
-          " " +
-          localStorage.getItem("lehrer").split(" ")[1];
+        let lehrer =lehrerName
         formData.append("name", name);
         formData.append("lehrername", lehrer);
         formData.append("uhrzeit", uhrzeit);
