@@ -214,24 +214,30 @@ private List<String> lehrerNamen;
         logger.error("❌ Fehler in @PostConstruct init()", e);
     }
     }
-  @PostConstruct
+ @PostConstruct
 public void loadExcelData() {
-    System.out.println("📦 Lade Excel-Daten einmalig...");
+    try {
+        System.out.println("📦 Lade Excel-Daten...");
 
-    raumByKuerzel = new HashMap<>();
+        raumByKuerzel = new HashMap<>();
 
-    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
-    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
+        List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
+        List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
 
-    for (int i = 0; i < raumKuerzel.size(); i++) {
-        raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
+        for (int i = 0; i < raumKuerzel.size(); i++) {
+            raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
+        }
+
+        schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
+        lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
+        lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
+
+        System.out.println("✅ Excel geladen");
+
+    } catch (Exception e) {
+        System.err.println("⚠️ Excel konnte nicht geladen werden – App startet trotzdem");
+        e.printStackTrace();
     }
-
-    schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-    lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
-    lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
-
-    System.out.println("✅ Excel-Daten geladen");
 }
 
     @PostMapping("/zeiten")
