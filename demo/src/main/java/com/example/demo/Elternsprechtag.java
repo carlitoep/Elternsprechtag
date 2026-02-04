@@ -2,8 +2,6 @@ package com.example.demo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -45,12 +43,6 @@ public class Elternsprechtag {
     // ===============================
 // Excel Cache (KLASSENFELDER)
 // ===============================
-private boolean excelLoaded = false;
-
-private Map<String, String> raumByKuerzel;
-private List<String> schuelerSpalte;
-private List<String> lehrerKuerzel;
-private List<String> lehrerNamen;
 
     @Autowired
     private mailRepository mailRepository;
@@ -130,7 +122,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         if (vorhandeneTermine.isEmpty()) {
             System.out.println("Tabelle ist leer — Termine werden neu angelegt...");
 
-            List<String> alleLehrer = leseSpalte(1, "Raum.xlsx"); // Lehrer-Namen aus Excel
+            List<String> alleLehrer = excelService.leseSpalte(1, "Raum.xlsx"); // Lehrer-Namen aus Excel
 
             for (String lehrer : alleLehrer) {
                 int anfangS = START;
@@ -215,7 +207,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
  @GetMapping("/debug/all")
 public String debugAll() {
     
-    List<String> alleLehrer = leseSpalte(1, "Raum.xlsx");
+    List<String> alleLehrer = excelService.leseSpalte(1, "Raum.xlsx");
 
     int startMinute = START * 60;
     int endMinute = 20 * 60; // 20:00
@@ -516,14 +508,14 @@ public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
 
    @PostMapping("/raum")
 public String raum(@RequestParam String lehrername) {
-    List<String> namen = leseSpalte(1, "Raum.xlsx");
+    List<String> namen = excelService.leseSpalte(1, "Raum.xlsx");
 
     if (!namen.contains(lehrername)) {
         return "Kein Raum gefunden";
     }
 
     int index = namen.indexOf(lehrername);
-    return leseZelle(index, 2, "Raum.xlsx");
+    return excelService.leseZelle(index, 2, "Raum.xlsx");
 }
 
 
