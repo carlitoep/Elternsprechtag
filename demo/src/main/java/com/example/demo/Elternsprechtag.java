@@ -121,16 +121,8 @@ private List<String> lehrerNamen;
         }
         return werte;
     }
-private boolean excelLoaded = false;
 
-private synchronized void ensureExcelLoaded() {
-    if (excelLoaded) return;
-
-    loadExcelData();
-    excelLoaded = true;
-}
    public List<String> getLehrer(String schuelername) {
-       ensureExcelLoaded();
     schuelername = capitalizeFirstLetter(schuelername);
 
     List<String> result = new ArrayList<>();
@@ -215,8 +207,10 @@ private synchronized void ensureExcelLoaded() {
             }
 
             System.out.println("Termine wurden erfolgreich initial eingetragen.");
+            loadExcelData();
         } else {
             System.out.println("Termine existieren bereits — es wird nichts neu angelegt.");
+            loadExcelData();
         }
  } catch (Exception e) {
         logger.error("❌ Fehler in @PostConstruct init()", e);
