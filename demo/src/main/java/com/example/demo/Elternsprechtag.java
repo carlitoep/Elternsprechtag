@@ -42,6 +42,16 @@ import jakarta.annotation.PostConstruct;
 @RequestMapping("/api")
 
 public class Elternsprechtag {
+    // ===============================
+// Excel Cache (KLASSENFELDER)
+// ===============================
+private boolean excelLoaded = false;
+
+private Map<String, String> raumByKuerzel;
+private List<String> schuelerSpalte;
+private List<String> lehrerKuerzel;
+private List<String> lehrerNamen;
+
     @Autowired
     private mailRepository mailRepository;
     @Autowired
@@ -64,10 +74,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
     static final int ABSCHNITTE = 10;
     static final int START = 17;
     static final DecimalFormat df = new DecimalFormat("00");
-private Map<String, String> raumByKuerzel;
-private List<String> schuelerSpalte;
-private List<String> lehrerKuerzel;
-private List<String> lehrerNamen;
+
     private static final Logger logger = LoggerFactory.getLogger(Elternsprechtag.class);
 
     private Map<String, List<String>> lehrerzeiten = new HashMap<>();
@@ -122,24 +129,10 @@ private List<String> lehrerNamen;
         return werte;
     }
 
- public List<String> getLehrer(String schuelername) {
+public List<String> getLehrer(String schuelername) {
+
     schuelername = capitalizeFirstLetter(schuelername).toLowerCase();
-
     List<String> result = new ArrayList<>();
-
-    // Raum.xlsx → Kürzel → Raum
-    Map<String, String> raumByKuerzel = new HashMap<>();
-    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
-    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
-
-    for (int i = 0; i < raumKuerzel.size(); i++) {
-        raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
-    }
-
-    // Lehrer.xlsx komplett einmal lesen
-    List<String> schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-    List<String> lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
-    List<String> lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
 
     for (int i = 0; i < schuelerSpalte.size(); i++) {
         if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
@@ -150,15 +143,17 @@ private List<String> lehrerNamen;
         String name = lehrerNamen.get(i);
 
         String raum = raumByKuerzel.get(kuerzel);
-        if (raum != null && !raum.isBlank()) {
-            result.add(raum + " " + name);
-        } else {
-            result.add(kuerzel + " " + name);
-        }
+
+        result.add(
+            (raum != null && !raum.isBlank() ? raum : kuerzel)
+            + " " + name
+        );
     }
 
     return result;
 }
+
+
 
     public static String capitalizeFirstLetter(String str) {
         if (str == null || str.isEmpty()) {
@@ -166,6 +161,31 @@ private List<String> lehrerNamen;
         }
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
+    private synchronized void loadExcelIfNeeded() {
+    if (excelLoaded) return;
+
+    System.out.println("📦 Lade Excel-Daten (on demand)...");
+
+    raumByKuerzel = new HashMap<>();
+
+    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
+    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
+
+    for (int i = 0; i < raumKuerzel.size(); i++) {
+        raumByKuerzel.put(
+            raumKuerzel.get(i).trim(),
+            raumNamen.get(i).trim()
+        );
+    }
+
+    schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
+    lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
+    lehrerNamen   = leseSpalte(9, "Lehrer.xlsx");
+
+    excelLoaded = true;
+    System.out.println("✅ Excel erfolgreich geladen");
+}
+
 
     public static void main(String[] args) {
         SpringApplication.run(Elternsprechtag.class, args);
@@ -439,6 +459,7 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
 
     @PostMapping("/schueler")
     public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
+        loadExcelIfNeeded();
         List<String> lehrerDesSchuelers = new ArrayList<>();
         lehrerDesSchuelers = getLehrer(schuelername);
         return lehrerDesSchuelers;
