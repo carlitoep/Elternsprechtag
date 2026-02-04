@@ -42,7 +42,7 @@ public class ExcelService {
         System.out.println("✅ Excel einmalig geladen");
     }
 
-    private List<String> leseSpalte(int spalte, String excelName) {
+    List<String> leseSpalte(int spalte, String excelName) {
         List<String> result = new ArrayList<>();
 
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(excelName);
