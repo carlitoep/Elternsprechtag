@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
@@ -130,6 +130,11 @@
       }
 
       function löschbar(stelle, zeitenArray, uhrzeit, name) {
+        name = name
+  .split(",")
+  .map(s => s.trim())
+  .reverse()
+  .join(", ");
         let lehrer =
           localStorage.getItem("lehrerName").split(" ")[0] +
           " " +
@@ -163,6 +168,11 @@
       }
 
       function löscheTermin(stelle, uhrzeit, name) {
+        name = name
+  .split(",")
+  .map(s => s.trim())
+  .reverse()
+  .join(", ");
         let formData = new URLSearchParams();
         let lehrer =
           localStorage.getItem("lehrer").split(" ")[0] +
