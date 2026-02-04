@@ -130,9 +130,23 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
     }
 
 public List<String> getLehrer(String schuelername) {
-
     schuelername = capitalizeFirstLetter(schuelername).toLowerCase();
+
     List<String> result = new ArrayList<>();
+
+    // Raum.xlsx → Kürzel → Raum
+    Map<String, String> raumByKuerzel = new HashMap<>();
+    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
+    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
+
+    for (int i = 0; i < raumKuerzel.size(); i++) {
+        raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
+    }
+
+    // Lehrer.xlsx komplett einmal lesen
+    List<String> schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
+    List<String> lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
+    List<String> lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
 
     for (int i = 0; i < schuelerSpalte.size(); i++) {
         if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
@@ -143,11 +157,11 @@ public List<String> getLehrer(String schuelername) {
         String name = lehrerNamen.get(i);
 
         String raum = raumByKuerzel.get(kuerzel);
-
-        result.add(
-            (raum != null && !raum.isBlank() ? raum : kuerzel)
-            + " " + name
-        );
+        if (raum != null && !raum.isBlank()) {
+            result.add(raum + " " + name);
+        } else {
+            result.add(kuerzel + " " + name);
+        }
     }
 
     return result;
@@ -459,7 +473,6 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
 
     @PostMapping("/schueler")
     public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
-        loadExcelIfNeeded();
         List<String> lehrerDesSchuelers = new ArrayList<>();
         lehrerDesSchuelers = getLehrer(schuelername);
         return lehrerDesSchuelers;
