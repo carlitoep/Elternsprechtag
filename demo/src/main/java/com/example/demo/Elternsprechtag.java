@@ -121,8 +121,16 @@ private List<String> lehrerNamen;
         }
         return werte;
     }
+private boolean excelLoaded = false;
 
+private synchronized void ensureExcelLoaded() {
+    if (excelLoaded) return;
+
+    loadExcelData();
+    excelLoaded = true;
+}
    public List<String> getLehrer(String schuelername) {
+       ensureExcelLoaded();
     schuelername = capitalizeFirstLetter(schuelername);
 
     List<String> result = new ArrayList<>();
@@ -214,7 +222,7 @@ private List<String> lehrerNamen;
         logger.error("❌ Fehler in @PostConstruct init()", e);
     }
     }
- @PostConstruct
+
 public void loadExcelData() {
     try {
         System.out.println("📦 Lade Excel-Daten...");
