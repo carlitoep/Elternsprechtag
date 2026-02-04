@@ -366,11 +366,12 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
         return result;
     }
 
- @PostMapping("/schueler")
+@PostMapping("/schueler")
 public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
-
-  return excelService.getLehrer(schuelername);
+    excelService.loadOnce(this); // EINMALIG
+    return excelService.getLehrer(schuelername);
 }
+
 
     @PostMapping("/loeschen")
     public String loescheTermin(@RequestParam String name, @RequestParam String lehrername,
