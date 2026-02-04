@@ -57,10 +57,11 @@ private ExcelService excelService;
 
 
 @Autowired
-public Elternsprechtag(TerminRepository terminRepository, MailService mailService, mailRepository mailRepository) {
+public Elternsprechtag(TerminRepository terminRepository, MailService mailService, mailRepository mailRepository, ExcelService excelService) {
     this.terminRepository = terminRepository;
     this.mailService = mailService;
     this.mailRepository = mailRepository;
+    this.excelService = excelService;
 }
 
 
