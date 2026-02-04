@@ -130,11 +130,6 @@ v<!DOCTYPE html>
       }
 
       function löschbar(stelle, zeitenArray, uhrzeit, name) {
-        name = name
-  .split(",")
-  .map(s => s.trim())
-  .reverse()
-  .join(", ");
         let lehrer = lehrerName;
         let formData = new URLSearchParams();
         formData.append("name", name);
