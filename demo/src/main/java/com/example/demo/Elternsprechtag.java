@@ -132,29 +132,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         return werte;
     }
 
-public List<String> getLehrer(String schuelername) {
 
-    schuelername = capitalizeFirstLetter(schuelername).toLowerCase();
-    List<String> result = new ArrayList<>();
-
-    for (int i = 0; i < schuelerSpalte.size(); i++) {
-        if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
-            continue;
-        }
-
-        String kuerzel = lehrerKuerzel.get(i);
-        String name = lehrerNamen.get(i);
-
-        String raum = raumByKuerzel.get(kuerzel);
-
-        result.add(
-            (raum != null && !raum.isBlank() ? raum : kuerzel)
-            + " " + name
-        );
-    }
-
-    return result;
-}
 
 
 
@@ -164,30 +142,7 @@ public List<String> getLehrer(String schuelername) {
         }
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
-    private synchronized void loadExcelIfNeeded() {
-    if (excelLoaded) return;
-
-    System.out.println("📦 Lade Excel-Daten (on demand)...");
-
-    raumByKuerzel = new HashMap<>();
-
-    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
-    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
-
-    for (int i = 0; i < raumKuerzel.size(); i++) {
-        raumByKuerzel.put(
-            raumKuerzel.get(i).trim(),
-            raumNamen.get(i).trim()
-        );
-    }
-
-    schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-    lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
-    lehrerNamen   = leseSpalte(9, "Lehrer.xlsx");
-
-    excelLoaded = true;
-    System.out.println("✅ Excel erfolgreich geladen");
-}
+   
 
 
     public static void main(String[] args) {
