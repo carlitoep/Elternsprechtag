@@ -555,23 +555,23 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
          * }
          */
              if (terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername, name, uhrzeit)) {
-          return "löschbar"
+          return "löschbar";
         } else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(",") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name, uhrzeit)){
-            return "löschbar"
+            return "löschbar";
         } else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name, uhrzeit)){
-             return "löschbar"
+             return "löschbar";
         }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(",") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name, uhrzeit)){
-           return "löschbar"
+           return "löschbar";
         }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(",") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name, uhrzeit)){
-             return "löschbar"
+             return "löschbar";
         }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(" ") ? name.split(",")[0].trim() + " " + name.split(",")[1].trim() : name, uhrzeit)){
-        return "löschbar"
+        return "löschbar";
         } else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(" ") ? name.split(",")[1].trim() + " " + name.split(",")[0].trim() : name, uhrzeit)){
-            return "löschbar"
+            return "löschbar";
         }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(" ") ? name.split(",")[1].trim() + ", " + name.split(",")[0].trim() : name, uhrzeit)){
-             return "löschbar"
+             return "löschbar";
         }else if(terminRepository.existsByLehrernameAndSchuelernameAndUhrzeit(lehrername,  name.contains(" ") ? name.split(",")[0].trim() + ", " + name.split(",")[1].trim() : name, uhrzeit)){
-            return "löschbar"
+            return "löschbar";
         }else {
              return "unlöschbar";
         }
