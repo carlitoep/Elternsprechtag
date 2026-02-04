@@ -17,30 +17,42 @@ public class ExcelService {
 
     private boolean loaded = false;
 
-    private Map<String, String> raumByKuerzel = new HashMap<>();
-    private List<String> schuelerSpalte;
-    private List<String> lehrerKuerzel;
-    private List<String> lehrerNamen;
+    // Raum.xlsx
+    private Map<String, String> lehrernameByKuerzel;
+    private Map<String, String> raumByKuerzel;
+
+    // Lehrer.xlsx
+    private List<String> schuelerSpalte;   // Spalte 2
+    private List<String> lehrerKuerzel;    // Spalte 8
+    private List<String> faecher;           // Spalte 9
+
 
     @PostConstruct
     public synchronized void loadOnce() {
-        if (loaded)
-            return;
+        if (loaded) return;
 
-        schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-        lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
-        lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
+    lehrernameByKuerzel = new HashMap<>();
+    raumByKuerzel = new HashMap<>();
 
-        List<String> kuerzel = leseSpalte(0, "Raum.xlsx");
-        List<String> raeume = leseSpalte(1, "Raum.xlsx");
+    // ===== Raum.xlsx =====
+    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
+    List<String> lehrerLang  = leseSpalte(1, "Raum.xlsx");
+    List<String> raeume      = leseSpalte(2, "Raum.xlsx");
 
-        for (int i = 0; i < kuerzel.size(); i++) {
-            raumByKuerzel.put(kuerzel.get(i).trim(), raeume.get(i).trim());
-        }
-
-        loaded = true;
-        System.out.println("✅ Excel einmalig geladen");
+    for (int i = 0; i < raumKuerzel.size(); i++) {
+        String k = raumKuerzel.get(i).trim();
+        lehrernameByKuerzel.put(k, lehrerLang.get(i).trim());
+        raumByKuerzel.put(k, raeume.get(i).trim());
     }
+
+    // ===== Lehrer.xlsx =====
+    schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
+    lehrerKuerzel  = leseSpalte(8, "Lehrer.xlsx");
+    faecher        = leseSpalte(9, "Lehrer.xlsx");
+
+    loaded = true;
+    System.out.println("✅ Excel einmalig korrekt geladen");
+}
 
     List<String> leseSpalte(int spalte, String excelName) {
         List<String> result = new ArrayList<>();
@@ -86,20 +98,27 @@ public class ExcelService {
         }
     }
 
-    public List<String> getLehrer(String schuelername) {
-        schuelername = schuelername.toLowerCase();
-        List<String> result = new ArrayList<>();
+  public List<String> getLehrer(String schuelername) {
+    schuelername = schuelername.trim().toLowerCase();
+    List<String> result = new ArrayList<>();
 
-        for (int i = 0; i < schuelerSpalte.size(); i++) {
-            if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername))
-                continue;
+    for (int i = 0; i < schuelerSpalte.size(); i++) {
 
-            String kuerzel = lehrerKuerzel.get(i);
-            String name = lehrerNamen.get(i);
-            String raum = raumByKuerzel.get(kuerzel);
-
-            result.add((raum != null ? raum : kuerzel) + " " + name);
+        if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
+            continue;
         }
-        return result;
+
+        String kuerzel = lehrerKuerzel.get(i).trim();
+        String fach    = faecher.get(i).trim();
+
+        String lehrerName = lehrernameByKuerzel.getOrDefault(kuerzel, kuerzel);
+        String raum       = raumByKuerzel.getOrDefault(kuerzel, "kein Raum");
+
+        result.add(raum + " " + lehrerName + " (" + fach + ")");
     }
+
+    return result;
 }
+
+}
+
