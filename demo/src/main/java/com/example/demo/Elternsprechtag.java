@@ -460,13 +460,13 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
         return result;
     }
 
-    @PostMapping("/schueler")
-    public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
-       excelService.loadIfNeeded(this);
-        List<String> lehrerDesSchuelers = new ArrayList<>();
-        lehrerDesSchuelers = getLehrer(schuelername);
-        return lehrerDesSchuelers;
-    }
+ @PostMapping("/schueler")
+public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
+
+    excelService.loadIfNeeded(this);
+    return excelService.getLehrer(schuelername);
+}
+
 
     @PostMapping("/loeschen")
     public String loescheTermin(@RequestParam String name, @RequestParam String lehrername,
