@@ -144,9 +144,9 @@ public List<String> getLehrer(String schuelername) {
     }
 
     // Lehrer.xlsx komplett einmal lesen
-    List<String> schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-    List<String> lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
-    List<String> lehrerNamen = leseSpalte(9, "Lehrer.xlsx");
+    List<String> schuelerSpalte = leseSpalte(0, "Lehrer.xlsx");
+    List<String> lehrerKuerzel = leseSpalte(1, "Lehrer.xlsx");
+    List<String> lehrerNamen = leseSpalte(2, "Lehrer.xlsx");
 
     for (int i = 0; i < schuelerSpalte.size(); i++) {
         if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
@@ -192,9 +192,9 @@ public List<String> getLehrer(String schuelername) {
         );
     }
 
-    schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
-    lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
-    lehrerNamen   = leseSpalte(9, "Lehrer.xlsx");
+    schuelerSpalte = leseSpalte(0, "Lehrer.xlsx");
+    lehrerKuerzel = leseSpalte(1, "Lehrer.xlsx");
+    lehrerNamen   = leseSpalte(2, "Lehrer.xlsx");
 
     excelLoaded = true;
     System.out.println("✅ Excel erfolgreich geladen");
