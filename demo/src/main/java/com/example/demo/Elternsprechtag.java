@@ -2,6 +2,8 @@ package com.example.demo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -43,6 +45,12 @@ public class Elternsprechtag {
     // ===============================
 // Excel Cache (KLASSENFELDER)
 // ===============================
+private boolean excelLoaded = false;
+
+private Map<String, String> raumByKuerzel;
+private List<String> schuelerSpalte;
+private List<String> lehrerKuerzel;
+private List<String> lehrerNamen;
 
     @Autowired
     private mailRepository mailRepository;
@@ -51,17 +59,13 @@ public class Elternsprechtag {
 
     @Autowired
     private MailService mailService;
-    @Autowired
-private ExcelService excelService;
-
 
 
 @Autowired
-public Elternsprechtag(TerminRepository terminRepository, MailService mailService, mailRepository mailRepository, ExcelService excelService) {
+public Elternsprechtag(TerminRepository terminRepository, MailService mailService, mailRepository mailRepository) {
     this.terminRepository = terminRepository;
     this.mailService = mailService;
     this.mailRepository = mailRepository;
-    this.excelService = excelService;
 }
 
 
@@ -77,13 +81,77 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
     private Map<String, int[]> startzeiten = new HashMap<>();
 
    
+    private InputStream loadExcel(String name) {
+    InputStream is = getClass().getClassLoader().getResourceAsStream(name);
+    if (is == null) {
+        logger.error("❌ Excel-Datei nicht gefunden: {}", name);
+        return null;
+    }
+    return is;
+}
+
+
+
+    public String leseZelle(int zeile, int spalte, String excelName) {
  
+        try (InputStream file = loadExcel(excelName);
+                Workbook workbook = new XSSFWorkbook(file)) {
 
+            Sheet sheet = workbook.getSheetAt(0);
+            Row row = sheet.getRow(zeile);
+            if (row != null) {
+                Cell cell = row.getCell(spalte);
+                if (cell != null) {
+                    return cell.toString();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "Kein Wert gefunden";
+    }
 
+    public List<String> leseSpalte(int spalte, String excelName) {
+        List<String> werte = new ArrayList<>();
+        try (InputStream file = loadExcel(excelName);
+                Workbook workbook = new XSSFWorkbook(file)) {
 
-  
+            Sheet sheet = workbook.getSheetAt(0);
+            for (Row row : sheet) {
+                Cell cell = row.getCell(spalte);
+                if (cell != null) {
+                    werte.add(cell.toString());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return werte;
+    }
 
+public List<String> getLehrer(String schuelername) {
 
+    schuelername = capitalizeFirstLetter(schuelername).toLowerCase();
+    List<String> result = new ArrayList<>();
+
+    for (int i = 0; i < schuelerSpalte.size(); i++) {
+        if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
+            continue;
+        }
+
+        String kuerzel = lehrerKuerzel.get(i);
+        String name = lehrerNamen.get(i);
+
+        String raum = raumByKuerzel.get(kuerzel);
+
+        result.add(
+            (raum != null && !raum.isBlank() ? raum : kuerzel)
+            + " " + name
+        );
+    }
+
+    return result;
+}
 
 
 
@@ -93,7 +161,30 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         }
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
-   
+    private synchronized void loadExcelIfNeeded() {
+    if (excelLoaded) return;
+
+    System.out.println("📦 Lade Excel-Daten (on demand)...");
+
+    raumByKuerzel = new HashMap<>();
+
+    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
+    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
+
+    for (int i = 0; i < raumKuerzel.size(); i++) {
+        raumByKuerzel.put(
+            raumKuerzel.get(i).trim(),
+            raumNamen.get(i).trim()
+        );
+    }
+
+    schuelerSpalte = leseSpalte(2, "Lehrer.xlsx");
+    lehrerKuerzel = leseSpalte(8, "Lehrer.xlsx");
+    lehrerNamen   = leseSpalte(9, "Lehrer.xlsx");
+
+    excelLoaded = true;
+    System.out.println("✅ Excel erfolgreich geladen");
+}
 
 
     public static void main(String[] args) {
@@ -123,7 +214,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
         if (vorhandeneTermine.isEmpty()) {
             System.out.println("Tabelle ist leer — Termine werden neu angelegt...");
 
-            List<String> alleLehrer = excelService.leseSpalte(1, "Raum.xlsx"); // Lehrer-Namen aus Excel
+            List<String> alleLehrer = leseSpalte(1, "Raum.xlsx"); // Lehrer-Namen aus Excel
 
             for (String lehrer : alleLehrer) {
                 int anfangS = START;
@@ -208,7 +299,7 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
  @GetMapping("/debug/all")
 public String debugAll() {
     
-    List<String> alleLehrer = excelService.leseSpalte(1, "Raum.xlsx");
+    List<String> alleLehrer = leseSpalte(1, "Raum.xlsx");
 
     int startMinute = START * 60;
     int endMinute = 20 * 60; // 20:00
@@ -366,12 +457,13 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
         return result;
     }
 
-@PostMapping("/schueler")
-public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
-    excelService.loadOnce(); // EINMALIG
-    return excelService.getLehrer(schuelername);
-}
-
+    @PostMapping("/schueler")
+    public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
+        loadExcelIfNeeded();
+        List<String> lehrerDesSchuelers = new ArrayList<>();
+        lehrerDesSchuelers = getLehrer(schuelername);
+        return lehrerDesSchuelers;
+    }
 
     @PostMapping("/loeschen")
     public String loescheTermin(@RequestParam String name, @RequestParam String lehrername,
@@ -508,14 +600,14 @@ public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
 
    @PostMapping("/raum")
 public String raum(@RequestParam String lehrername) {
-    List<String> namen = excelService.leseSpalte(1, "Raum.xlsx");
+    List<String> namen = leseSpalte(1, "Raum.xlsx");
 
     if (!namen.contains(lehrername)) {
         return "Kein Raum gefunden";
     }
 
     int index = namen.indexOf(lehrername);
-    return excelService.leseZelle(index, 2, "Raum.xlsx");
+    return leseZelle(index, 2, "Raum.xlsx");
 }
 
 
