@@ -59,6 +59,9 @@ private List<String> lehrerNamen;
 
     @Autowired
     private MailService mailService;
+    @Autowired
+private ExcelService excelService;
+
 
 
 @Autowired
@@ -459,7 +462,7 @@ name = name.contains(",") ? name.split(",")[1].trim() + " " + name.split(",")[0]
 
     @PostMapping("/schueler")
     public List<String> lehrerDesSchuelers(@RequestParam String schuelername) {
-        loadExcelIfNeeded();
+       excelService.loadIfNeeded(this);
         List<String> lehrerDesSchuelers = new ArrayList<>();
         lehrerDesSchuelers = getLehrer(schuelername);
         return lehrerDesSchuelers;
