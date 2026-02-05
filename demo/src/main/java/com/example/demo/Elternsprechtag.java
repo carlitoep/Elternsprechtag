@@ -37,7 +37,6 @@ import java.time.LocalTime;
 import jakarta.annotation.PostConstruct;
 
 @SpringBootApplication
-    @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 
