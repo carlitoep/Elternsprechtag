@@ -51,22 +51,29 @@ private List<String> schuelerSpalte;
 private List<String> lehrerKuerzel;
 private List<String> lehrerNamen;
 
-    @Autowired
-    private mailRepository mailRepository;
-    @Autowired
-    private final TerminRepository terminRepository;
-
-    @Autowired
-    private MailService mailService;
-
+   private final MailRepository mailRepository;
+private final LehrerRaumRepository lehrerRaumRepository;
+private final LehrerZuordnungRepository lehrerZuordnungRepository;
+private final TerminRepository terminRepository;
+private final MailService mailService;
+private final ExcelService excelService;
 
 @Autowired
-public Elternsprechtag(TerminRepository terminRepository, MailService mailService, mailRepository mailRepository) {
+public Elternsprechtag(
+        TerminRepository terminRepository,
+        MailService mailService,
+        MailRepository mailRepository,
+        LehrerZuordnungRepository lehrerZuordnungRepository,
+        LehrerRaumRepository lehrerRaumRepository,
+        ExcelService excelService
+) {
     this.terminRepository = terminRepository;
     this.mailService = mailService;
     this.mailRepository = mailRepository;
+    this.lehrerZuordnungRepository = lehrerZuordnungRepository;
+    this.lehrerRaumRepository = lehrerRaumRepository;
+    this.excelService = excelService;
 }
-
 
     static final int LEHRERANZAHL = 5;
     static final int DAUER = 180;
@@ -129,38 +136,21 @@ public Elternsprechtag(TerminRepository terminRepository, MailService mailServic
     }
 
 public List<String> getLehrer(String schuelername) {
-    schuelername = capitalizeFirstLetter(schuelername).toLowerCase();
+
+    List<LehrerZuordnung> zuordnungen =
+            lehrerZuordnungRepo.findBySchuelerIgnoreCase(schuelername);
 
     List<String> result = new ArrayList<>();
 
-    // Raum.xlsx → Kürzel → Raum
-    Map<String, String> raumByKuerzel = new HashMap<>();
-    List<String> raumKuerzel = leseSpalte(0, "Raum.xlsx");
-    List<String> raumNamen = leseSpalte(1, "Raum.xlsx");
+    for (LehrerZuordnung z : zuordnungen) {
+        String kuerzel = z.getLehrerKuerzel();
 
-    for (int i = 0; i < raumKuerzel.size(); i++) {
-        raumByKuerzel.put(raumKuerzel.get(i), raumNamen.get(i));
-    }
+        String name = lehrerRaumRepo
+                .findByKuerzel(kuerzel)
+                .map(lr -> lr.getLehrername() + " (" + lr.getRaum() + ")")
+                .orElse(kuerzel);
 
-    // Lehrer.xlsx komplett einmal lesen
-    List<String> schuelerSpalte = leseSpalte(0, "Lehrer.xlsx");
-    List<String> lehrerKuerzel = leseSpalte(1, "Lehrer.xlsx");
-    List<String> lehrerNamen = leseSpalte(2, "Lehrer.xlsx");
-
-    for (int i = 0; i < schuelerSpalte.size(); i++) {
-        if (!schuelerSpalte.get(i).equalsIgnoreCase(schuelername)) {
-            continue;
-        }
-
-        String kuerzel = lehrerKuerzel.get(i);
-        String name = lehrerNamen.get(i);
-
-        String raum = raumByKuerzel.get(kuerzel);
-        if (raum != null && !raum.isBlank()) {
-            result.add(raum + " " + name);
-        } else {
-            result.add(kuerzel + " " + name);
-        }
+        result.add(name);
     }
 
     return result;
@@ -262,6 +252,28 @@ public List<String> getLehrer(String schuelername) {
  } catch (Exception e) {
         logger.error("❌ Fehler in @PostConstruct init()", e);
     }
+          try {
+        // 1️⃣ Lehrer-Raum laden, wenn leer
+        if (lehrerRaumRepository.count() == 0) {
+            excelService.loadLehrerRaum(lehrerRaumRepository);
+        }
+
+        // 2️⃣ Lehrer-Zuordnung laden, wenn leer
+        if (lehrerZuordnungRepository.count() == 0) {
+            excelService.loadLehrerZuordnung(lehrerZuordnungRepository);
+        }
+
+        // 3️⃣ Termine erzeugen, wenn leer
+        if (terminRepository.count() == 0) {
+            excelService.loadTermine(terminRepository);
+        }
+
+        System.out.println("✅ Excel und DB initialisiert (falls leer).");
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
     }
 
 
