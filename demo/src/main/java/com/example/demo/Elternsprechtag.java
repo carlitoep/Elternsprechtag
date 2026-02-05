@@ -351,6 +351,14 @@ public String debugAll() {
 public List<Termin> debugTermine() {
     return terminRepository.findAll();
 }
+     @GetMapping("/debug/excel")
+public List<Termin> debugExcel() {
+    return lehrerZuordnungRepository.findAll();
+}
+    @GetMapping("/debug/excel2")
+public List<Termin> debugExcel2() {
+    return lehrerRaumRepository.findAll();
+}
 
      @GetMapping("/debug/verify")
 public List<Verifizierung> debugVerify() {
