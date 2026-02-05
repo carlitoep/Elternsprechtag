@@ -1,0 +1,5 @@
+public interface LehrerZuordnungRepository
+        extends JpaRepository<LehrerZuordnung, Long> {
+
+    List<LehrerZuordnung> findBySchuelerIgnoreCase(String schueler);
+}
