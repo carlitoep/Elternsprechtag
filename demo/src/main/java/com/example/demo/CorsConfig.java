@@ -9,14 +9,15 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins(
+        registry.addMapping("/**") // 🔴 NICHT /api/**
+                .allowedOriginPatterns( // 🔴 NICHT allowedOrigins
                     "https://elternsprechtag-1.onrender.com",
-                   "https://elternsprechtag.goetheschule-neu-isenburg.de",
-                    "http://localhost:5500",
-                    "http://localhost:3000"
+                    "https://elternsprechtag.goetheschule-neu-isenburg.de",
+                    "http://localhost:*"
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedMethods("*")
+                .allowedHeaders("*")
+                .allowCredentials(false)
+                .maxAge(3600);
     }
 }
