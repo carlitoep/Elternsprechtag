@@ -31,9 +31,9 @@ public class ExcelService {
     public void loadLehrerZuordnungIfEmpty(LehrerZuordnungRepository lehrerZuordnungRepository) {
         if (!lehrerZuordnungRepository.findAll().isEmpty()) return;
 
-        List<String> schueler = leseSpalte(2, "Lehrer.xlsx");
-        List<String> kuerzel = leseSpalte(8, "Lehrer.xlsx");
-        List<String> fach = leseSpalte(9, "Lehrer.xlsx");
+        List<String> schueler = leseSpalte(0, "Lehrer.xlsx");
+        List<String> kuerzel = leseSpalte(1, "Lehrer.xlsx");
+        List<String> fach = leseSpalte(2, "Lehrer.xlsx");
 
         for (int i = 0; i < schueler.size(); i++) {
             LehrerZuordnung lz = new LehrerZuordnung();
@@ -52,3 +52,4 @@ public class ExcelService {
         return List.of(); // Platzhalter
     }
 }
+
