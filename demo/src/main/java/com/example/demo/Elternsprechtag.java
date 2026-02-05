@@ -352,11 +352,11 @@ public List<Termin> debugTermine() {
     return terminRepository.findAll();
 }
      @GetMapping("/debug/excel")
-public List<Termin> debugExcel() {
+public List<LehrerZuordnung> debugExcel() {
     return lehrerZuordnungRepository.findAll();
 }
     @GetMapping("/debug/excel2")
-public List<Termin> debugExcel2() {
+public List<LehrerRaum> debugExcel2() {
     return lehrerRaumRepository.findAll();
 }
 
