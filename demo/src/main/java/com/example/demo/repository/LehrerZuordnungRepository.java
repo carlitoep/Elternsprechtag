@@ -2,6 +2,7 @@ package com.example.demo.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.example.demo.entity.LehrerZuordnung;
 import com.example.demo.entity.Termin;
 
 import java.time.LocalTime;
