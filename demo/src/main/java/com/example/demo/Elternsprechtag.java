@@ -354,10 +354,30 @@ public List<Termin> debugTermine() {
 }
      @GetMapping("/debug/excel")
 public List<LehrerZuordnung> debugExcel() {
+     List<String> schueler = leseSpalte(0, "Lehrer.xlsx");
+        List<String> kuerzel = leseSpalte(1, "Lehrer.xlsx");
+        List<String> fach = leseSpalte(2, "Lehrer.xlsx");
+
+        for (int i = 0; i < schueler.size(); i++) {
+            LehrerZuordnung lz = new LehrerZuordnung();
+            lz.setSchueler(schueler.get(i).trim());
+            lz.setLehrerKuerzel(kuerzel.get(i).trim());
+            lz.setFach(fach.get(i).trim());
+            lehrerZuordnungRepository.save(lz);
+        }
     return lehrerZuordnungRepository.findAll();
 }
     @GetMapping("/debug/excel2")
 public List<LehrerRaum> debugExcel2() {
+      List<String> kuerzel = leseSpalte(0, "Raum.xlsx");
+        List<String> langnamen = leseSpalte(1, "Raum.xlsx");
+
+        for (int i = 0; i < kuerzel.size(); i++) {
+            LehrerRaum lr = new LehrerRaum();
+            lr.setKuerzel(kuerzel.get(i).trim());
+            lr.setLehrername(langnamen.get(i).trim());
+            lehrerRaumRepository.save(lr);
+        }
     return lehrerRaumRepository.findAll();
 }
      @GetMapping("/debug/verify")
