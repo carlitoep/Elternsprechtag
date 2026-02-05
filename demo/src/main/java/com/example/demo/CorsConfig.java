@@ -9,12 +9,8 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // 🔴 NICHT /api/**
-                .allowedOriginPatterns( // 🔴 NICHT allowedOrigins
-                    "https://elternsprechtag-1.onrender.com",
-                    "https://elternsprechtag.goetheschule-neu-isenburg.de",
-                    "http://localhost:*"
-                )
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(false)
