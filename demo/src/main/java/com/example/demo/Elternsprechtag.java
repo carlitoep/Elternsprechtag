@@ -24,10 +24,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.entity.LehrerZuordnung;
 import com.example.demo.entity.Termin;
 import com.example.demo.entity.Verifizierung;
+import com.example.demo.repository.LehrerRaumRepository;
+import com.example.demo.repository.LehrerZuordnungRepository;
 import com.example.demo.repository.TerminRepository;
-import com.example.demo.repository.mailRepository;
+import com.example.demo.repository.MailRepository;
 
 import java.util.Arrays;
 import jakarta.persistence.*;
@@ -136,27 +139,29 @@ public Elternsprechtag(
     }
 
 public List<String> getLehrer(String schuelername) {
+    // Schülername normalisieren (optional)
+    String normalizedSchueler = schuelername.trim().toLowerCase();
 
+    // Alle Zuordnungen für den Schüler holen
     List<LehrerZuordnung> zuordnungen =
-            lehrerZuordnungRepo.findBySchuelerIgnoreCase(schuelername);
+            lehrerZuordnungRepository.findBySchuelerIgnoreCase(normalizedSchueler);
 
     List<String> result = new ArrayList<>();
 
     for (LehrerZuordnung z : zuordnungen) {
         String kuerzel = z.getLehrerKuerzel();
 
-        String name = lehrerRaumRepo
+        // Kürzel → Langname + Raum
+        String name = lehrerRaumRepository
                 .findByKuerzel(kuerzel)
                 .map(lr -> lr.getLehrername() + " (" + lr.getRaum() + ")")
-                .orElse(kuerzel);
+                .orElse(kuerzel); // falls nicht gefunden, Kürzel zurückgeben
 
         result.add(name);
     }
 
     return result;
 }
-
-
 
     public static String capitalizeFirstLetter(String str) {
         if (str == null || str.isEmpty()) {
@@ -253,28 +258,14 @@ public List<String> getLehrer(String schuelername) {
         logger.error("❌ Fehler in @PostConstruct init()", e);
     }
           try {
-        // 1️⃣ Lehrer-Raum laden, wenn leer
-        if (lehrerRaumRepository.count() == 0) {
-            excelService.loadLehrerRaum(lehrerRaumRepository);
-        }
-
-        // 2️⃣ Lehrer-Zuordnung laden, wenn leer
-        if (lehrerZuordnungRepository.count() == 0) {
-            excelService.loadLehrerZuordnung(lehrerZuordnungRepository);
-        }
-
-        // 3️⃣ Termine erzeugen, wenn leer
-        if (terminRepository.count() == 0) {
-            excelService.loadTermine(terminRepository);
-        }
-
+        excelService.loadLehrerRaumIfEmpty(lehrerRaumRepository);
+    excelService.loadLehrerZuordnungIfEmpty(lehrerZuordnungRepository);
         System.out.println("✅ Excel und DB initialisiert (falls leer).");
 
     } catch (Exception e) {
         e.printStackTrace();
     }
 }
-    }
 
 
     @PostMapping("/zeiten")
