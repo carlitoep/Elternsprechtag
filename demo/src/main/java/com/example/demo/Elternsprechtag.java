@@ -24,6 +24,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.entity.LehrerRaum;
 import com.example.demo.entity.LehrerZuordnung;
 import com.example.demo.entity.Termin;
 import com.example.demo.entity.Verifizierung;
@@ -359,7 +360,6 @@ public List<LehrerZuordnung> debugExcel() {
 public List<LehrerRaum> debugExcel2() {
     return lehrerRaumRepository.findAll();
 }
-
      @GetMapping("/debug/verify")
 public List<Verifizierung> debugVerify() {
     return mailRepository.findAll();
